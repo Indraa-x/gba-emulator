@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="indigo">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#191919">
+  <meta name="description" content="Emulador de Game Boy Advance local com biblioteca inspirada em consoles modernos.">
+  <title>Advance Home</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <a class="skip-link" href="#softwareLibrary">Ir para os jogos</a>
+
+  <div id="bootScreen" class="boot-screen" aria-label="Inicializando">
+    <div class="boot-symbol" aria-hidden="true"><span></span><span></span></div>
+  </div>
+
+  <div id="console" class="console-root">
+    <section id="homeView" class="home-view view--active" aria-label="Menu inicial">
+      <header class="home-statusbar">
+        <div class="profiles">
+          <button id="profileAvatarButton" class="profile-avatar profile-avatar--primary" type="button" aria-label="Personalizar meu perfil" title="Meu perfil">
+            <img id="profileAvatarImage" src="assets/avatars/verdant-drake.png?v=2" alt="Avatar Broto esmeralda">
+          </button>
+        </div>
+
+        <div class="system-status" aria-label="Status do sistema">
+          <time id="systemClock">--:--</time>
+          <svg class="wifi-icon" viewBox="0 0 24 24" aria-label="Conexão local"><path d="M2.5 8.8a15 15 0 0 1 19 0l-1.8 2.1a12.2 12.2 0 0 0-15.4 0L2.5 8.8Zm3.6 4.1a9.4 9.4 0 0 1 11.8 0L16 15a6.5 6.5 0 0 0-8 0l-1.9-2.1Zm4 4.2a3.2 3.2 0 0 1 3.8 0L12 19.4l-1.9-2.3Z"/></svg>
+          <span class="battery-icon" aria-label="Bateria cheia"><i></i></span>
+        </div>
+      </header>
+
+      <main id="softwareLibrary" class="home-content">
+        <div class="software-strip" aria-label="Jogos disponíveis">
+          <div id="recentList" class="software-list" role="list"></div>
+          <button id="dropZone" class="software-card software-card--add" type="button" data-game-title="Adicionar jogo" data-game-meta="Escolha uma ROM .gba" aria-label="Adicionar um jogo GBA">
+            <span class="add-symbol" aria-hidden="true">+</span>
+            <span class="software-card__label">Adicionar jogo</span>
+          </button>
+        </div>
+
+        <nav class="system-dock" aria-label="Funções do sistema">
+          <button id="profileDockButton" class="system-button system-button--profile" type="button" aria-label="Personalizar meu perfil" title="Meu perfil">
+            <svg viewBox="0 0 32 32"><path d="M16 15a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11Zm0 3C9.9 18 5 21.6 5 26v2h22v-2c0-4.4-4.9-8-11-8Z"/></svg>
+          </button>
+          <button class="system-button" type="button" data-open-settings="controls" aria-label="Controles" title="Controles">
+            <svg viewBox="0 0 32 32"><path d="M7 12h18a5 5 0 0 1 4.8 6.4l-1.7 5.8a3.6 3.6 0 0 1-6.1 1.5l-2.4-2.4h-7.2L10 25.7a3.6 3.6 0 0 1-6.1-1.5l-1.7-5.8A5 5 0 0 1 7 12Zm3.5 3v2.5H8v2h2.5V22h2v-2.5H15v-2h-2.5V15h-2Zm11.2 1.2a1.4 1.4 0 1 0 0 2.8 1.4 1.4 0 0 0 0-2.8Zm3.4 3.1a1.4 1.4 0 1 0 0 2.8 1.4 1.4 0 0 0 0-2.8Z"/></svg>
+          </button>
+          <button class="system-button" type="button" data-open-settings="saves" aria-label="Estados salvos" title="Estados salvos">
+            <svg viewBox="0 0 32 32"><path d="M6 4h17l4 4v20H6V4Zm4 3v8h12V7H10Zm0 12v6h13v-6H10Zm8-11h3v5h-3V8Z"/></svg>
+          </button>
+          <button class="system-button" type="button" data-open-settings="audio" aria-label="Áudio" title="Áudio">
+            <svg viewBox="0 0 32 32"><path d="M5 12h6l7-6v20l-7-6H5v-8Zm17.2-.8a7 7 0 0 1 0 9.6l-2-2a4.2 4.2 0 0 0 0-5.6l2-2Zm3.7-3.7a12.2 12.2 0 0 1 0 17l-2-2a9.4 9.4 0 0 0 0-13l2-2Z"/></svg>
+          </button>
+          <button id="screenshotBtn" class="system-button" type="button" aria-label="Capturar tela" title="Álbum e captura" hidden>
+            <svg viewBox="0 0 32 32"><path d="M9 8h4l1.7-2h4.6L21 8h3a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H8a5 5 0 0 1-5-5V13a5 5 0 0 1 5-5h1Zm7 5a6 6 0 1 0 0 12 6 6 0 0 0 0-12Zm0 3a3 3 0 1 1 0 6 3 3 0 0 1 0-6Z"/></svg>
+          </button>
+          <button id="fullscreenBtn" class="system-button" type="button" aria-label="Tela cheia" title="Tela cheia">
+            <svg viewBox="0 0 32 32"><path d="M5 5h9v3H8v6H5V5Zm13 0h9v9h-3V8h-6V5ZM5 18h3v6h6v3H5v-9Zm19 0h3v9h-9v-3h6v-6Z"/></svg>
+          </button>
+          <button id="settingsBtn" class="system-button" type="button" aria-label="Configurações" title="Configurações">
+            <svg viewBox="0 0 32 32"><path d="m13 3 .8 3.1a11 11 0 0 1 4.4 0L19 3l4 1.7-1.7 2.8a11 11 0 0 1 3.2 3.2L27.3 9l1.7 4-3.1.8a11 11 0 0 1 0 4.4l3.1.8-1.7 4-2.8-1.7a11 11 0 0 1-3.2 3.2l1.7 2.8-4 1.7-.8-3.1a11 11 0 0 1-4.4 0L13 29l-4-1.7 1.7-2.8a11 11 0 0 1-3.2-3.2L4.7 23 3 19l3.1-.8a11 11 0 0 1 0-4.4L3 13l1.7-4 2.8 1.7a11 11 0 0 1 3.2-3.2L9 4.7 13 3Zm3 8a5 5 0 1 0 0 10 5 5 0 0 0 0-10Z"/></svg>
+          </button>
+        </nav>
+
+        <div class="selected-software-copy">
+          <p id="selectedGameTitle">Pokémon Emerald</p>
+          <span id="selectedGameMeta">Game Boy Advance</span>
+        </div>
+      </main>
+
+      <footer class="home-footer">
+        <div class="controller-state">
+          <span class="joycon-pair" aria-hidden="true"><i></i><b></b></span>
+          <span id="appStatus">PRONTO</span>
+          <span id="connectionDot" class="status-dot"></span>
+          <span id="powerLed" class="status-dot"></span>
+        </div>
+        <div class="button-hints">
+          <span><kbd>＋</kbd> Opções</span>
+          <span><kbd>A</kbd> Iniciar</span>
+        </div>
+      </footer>
+    </section>
+
+    <section id="gameView" class="game-view" aria-label="Jogo em execução">
+      <div id="display" class="game-display" tabindex="-1">
+        <canvas id="screen" width="240" height="160" aria-label="Tela do jogo"></canvas>
+        <div id="gameHud" class="game-hud is-hidden"><span id="gameTitle">SEM CARTUCHO</span><span id="fpsCounter">0 FPS</span></div>
+        <button id="quickMenuBtn" class="quick-trigger" type="button" aria-label="Abrir menu rápido">Menu</button>
+      </div>
+    </section>
+
+    <section id="quickMenu" class="quick-menu" aria-labelledby="quickTitle">
+      <div class="quick-panel">
+        <p class="quick-kicker">JOGO PAUSADO</p>
+        <h2 id="quickTitle">Menu rápido</h2>
+        <div class="quick-grid">
+          <button data-quick="resume" type="button"><span>▶</span>Continuar</button>
+          <button data-quick="save" type="button"><span>↓</span>Salvar estado</button>
+          <button data-quick="load" type="button"><span>↑</span>Carregar estado</button>
+          <button data-quick="fullscreen" type="button"><span>□</span>Tela cheia</button>
+          <button data-quick="fast" type="button"><span id="quickSpeedValue">2×</span>Velocidade fixa</button>
+          <button data-quick="home" type="button"><span>⌂</span>Menu HOME</button>
+        </div>
+        <section class="quick-game-settings" aria-labelledby="quickSettingsTitle">
+          <header class="quick-settings-head">
+            <div><span>AJUSTES DO JOGO</span><h3 id="quickSettingsTitle">Imagem e som</h3></div>
+          </header>
+          <div class="quick-settings-grid">
+            <label class="quick-setting quick-setting--range" for="quickVolumeRange">
+              <span><strong>Volume</strong><small id="quickVolumeValue">70%</small></span>
+              <input id="quickVolumeRange" type="range" min="0" max="100" value="70">
+            </label>
+            <label class="quick-setting" for="quickFilterSelect">
+              <span><strong>Imagem</strong><small>Filtro da tela</small></span>
+              <select id="quickFilterSelect">
+                <option value="pixelated">Pixelado</option>
+                <option value="smooth">Suave</option>
+                <option value="lcd">Grade LCD</option>
+              </select>
+            </label>
+            <label class="quick-setting quick-setting--toggle" for="quickUiSoundToggle">
+              <span><strong>Interface</strong><small>Sons do menu</small></span>
+              <input id="quickUiSoundToggle" class="switch" type="checkbox">
+            </label>
+          </div>
+        </section>
+        <small>Direcional navega · A confirma · B volta · Start abre este menu</small>
+      </div>
+    </section>
+
+    <div id="loadingOverlay" class="loading-overlay" role="status" aria-live="polite">
+      <span class="loading-spinner"></span>
+      <strong id="loadingText">Lendo jogo…</strong>
+    </div>
+  </div>
+
+  <input id="romInput" type="file" accept=".gba,application/octet-stream" hidden>
+  <input id="fpsToggle" type="checkbox" hidden>
+  <select id="themeSelect" hidden><option value="indigo">Escuro</option><option value="arctic">Claro</option><option value="grape">Roxo</option><option value="ember">Vermelho</option><option value="graphite">Grafite</option></select>
+
+  <dialog id="settingsDialog" class="settings-dialog" aria-labelledby="settingsTitle">
+    <form method="dialog" class="settings-shell">
+      <header class="settings-head">
+        <div><span>Configurações do sistema</span><h2 id="settingsTitle">Configurações</h2></div>
+        <button class="close-button" value="close" aria-label="Fechar configurações" type="submit">×</button>
+      </header>
+
+      <div class="settings-layout">
+        <nav class="settings-tabs" aria-label="Categorias" role="tablist">
+          <button id="tabControls" class="settings-tab is-active" data-tab="controls" type="button" role="tab" aria-selected="true" aria-controls="panelControls">Controles</button>
+          <button id="tabVideo" class="settings-tab" data-tab="video" type="button" role="tab" aria-selected="false" aria-controls="panelVideo">Tela</button>
+          <button id="tabAudio" class="settings-tab" data-tab="audio" type="button" role="tab" aria-selected="false" aria-controls="panelAudio">Áudio</button>
+          <button id="tabSaves" class="settings-tab" data-tab="saves" type="button" role="tab" aria-selected="false" aria-controls="panelSaves">Estados</button>
+        </nav>
+
+        <div class="settings-panels">
+          <section id="panelControls" class="settings-panel is-active" data-panel="controls" role="tabpanel" aria-labelledby="tabControls">
+            <div class="panel-title"><h3>Controle sem fio</h3><p>Conecte um controle Bluetooth ou USB e personalize cada botão.</p></div>
+            <div id="gamepadCard" class="gamepad-card" role="status" aria-live="polite">
+              <span id="gamepadStatusDot" class="gamepad-status-dot"></span>
+              <span class="gamepad-card__copy"><strong id="gamepadStatus">Nenhum controle detectado</strong><small id="gamepadDetail">Pressione um botão para ativar.</small></span>
+              <span id="gamepadBadge" class="gamepad-badge">OFFLINE</span>
+              <div class="gamepad-card__actions">
+                <a id="bluetoothSettingsBtn" class="secondary-button" href="ms-settings:bluetooth">Abrir Bluetooth</a>
+                <button id="detectGamepadBtn" class="primary-button" type="button">Detectar controle</button>
+              </div>
+            </div>
+            <label class="setting-row" for="gamepadSelect"><span><strong>Controle ativo</strong><small>Escolha o dispositivo em uso.</small></span><select id="gamepadSelect" disabled><option value="">Nenhum</option></select></label>
+            <div class="section-label">Mapa do controle</div>
+            <div id="gamepadMap" class="key-map"></div>
+            <button id="resetGamepadBtn" class="secondary-button" type="button">Restaurar controle padrão</button>
+            <div class="section-label">Mapa do teclado</div>
+            <div id="keyMap" class="key-map"></div>
+            <button id="resetKeysBtn" class="secondary-button" type="button">Restaurar teclado padrão</button>
+          </section>
+
+          <section id="panelVideo" class="settings-panel" data-panel="video" role="tabpanel" aria-labelledby="tabVideo">
+            <div class="panel-title"><h3>Tela</h3><p>Ajustes aplicados ao jogo em tempo real.</p></div>
+            <label class="setting-row"><span><strong>Filtro de imagem</strong><small>Escolha como os pixels são exibidos.</small></span><select id="filterSelect"><option value="pixelated">Pixelado</option><option value="smooth">Suave</option><option value="lcd">Grade LCD</option></select></label>
+            <label class="setting-row setting-row--range"><span><strong>Brilho</strong><small id="brightnessValue">100%</small></span><input id="brightnessRange" type="range" min="55" max="135" value="100"></label>
+          </section>
+
+          <section id="panelAudio" class="settings-panel" data-panel="audio" role="tabpanel" aria-labelledby="tabAudio">
+            <div class="panel-title"><h3>Áudio</h3><p>Volume e canais do Game Boy Advance.</p></div>
+            <label class="setting-row"><span><strong>Sons do menu</strong><small>Efeitos suaves de navegação e confirmação.</small></span><input id="uiSoundToggle" class="switch" type="checkbox" checked></label>
+            <label class="setting-row setting-row--range"><span><strong>Volume geral</strong><small id="volumeValue">70%</small></span><input id="volumeRange" type="range" min="0" max="100" value="70"></label>
+            <div id="channelToggles" class="channel-list"></div>
+          </section>
+
+          <section id="panelSaves" class="settings-panel" data-panel="saves" role="tabpanel" aria-labelledby="tabSaves">
+            <div class="panel-title"><h3>Estados salvos</h3><p>Cinco pontos de retorno para o jogo atual.</p></div>
+            <div id="saveSlots" class="save-slots"></div>
+          </section>
+
+        </div>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="profileDialog" class="profile-dialog" aria-labelledby="profileTitle">
+    <form method="dialog" class="profile-shell">
+      <header class="settings-head profile-head">
+        <div><span>Perfil local</span><h2 id="profileTitle">Escolha seu avatar</h2></div>
+        <button class="close-button" value="close" aria-label="Fechar perfil" type="submit">×</button>
+      </header>
+      <div class="avatar-picker">
+        <div class="avatar-picker-intro">
+          <div class="avatar-current" aria-hidden="true">
+            <img id="profilePreviewImage" src="assets/avatars/verdant-drake.png?v=2" alt="">
+          </div>
+          <div class="avatar-picker-copy">
+            <h3 id="profileAvatarName">Broto esmeralda</h3>
+            <p id="profileDescription">Escolha um sprite inspirado nos mundos dos jogos da sua biblioteca.</p>
+          </div>
+        </div>
+        <div id="avatarGrid" class="avatar-grid" role="radiogroup" aria-labelledby="profileTitle" aria-describedby="profileDescription">
+          <button class="avatar-option is-selected" type="button" role="radio" aria-checked="true" data-avatar-id="verdant-drake">
+            <span class="avatar-option__image"><img src="assets/avatars/verdant-drake.png?v=2" alt=""></span><span>Broto esmeralda</span>
+          </button>
+          <button class="avatar-option" type="button" role="radio" aria-checked="false" data-avatar-id="ember-lynx">
+            <span class="avatar-option__image"><img src="assets/avatars/ember-lynx.png?v=2" alt=""></span><span>Lince em brasa</span>
+          </button>
+          <button class="avatar-option" type="button" role="radio" aria-checked="false" data-avatar-id="storm-hare">
+            <span class="avatar-option__image"><img src="assets/avatars/storm-hare.png?v=2" alt=""></span><span>Lebre elétrica</span>
+          </button>
+          <button class="avatar-option" type="button" role="radio" aria-checked="false" data-avatar-id="tide-turtle">
+            <span class="avatar-option__image"><img src="assets/avatars/tide-turtle.png?v=2" alt=""></span><span>Tartaruga maré</span>
+          </button>
+          <button class="avatar-option" type="button" role="radio" aria-checked="false" data-avatar-id="moss-owl">
+            <span class="avatar-option__image"><img src="assets/avatars/moss-owl.png?v=2" alt=""></span><span>Coruja da mata</span>
+          </button>
+          <button class="avatar-option" type="button" role="radio" aria-checked="false" data-avatar-id="leaf-spirit">
+            <span class="avatar-option__image"><img src="assets/avatars/leaf-spirit.png?v=2" alt=""></span><span>Espírito-folha</span>
+          </button>
+          <button class="avatar-option" type="button" role="radio" aria-checked="false" data-avatar-id="fairy-lantern">
+            <span class="avatar-option__image"><img src="assets/avatars/fairy-lantern.png?v=2" alt=""></span><span>Luz feérica</span>
+          </button>
+          <button class="avatar-option" type="button" role="radio" aria-checked="false" data-avatar-id="coral-mole">
+            <span class="avatar-option__image"><img src="assets/avatars/coral-mole.png?v=2" alt=""></span><span>Toupeira mecânica</span>
+          </button>
+          <button class="avatar-option" type="button" role="radio" aria-checked="false" data-avatar-id="sprout-dino">
+            <span class="avatar-option__image"><img src="assets/avatars/sprout-dino.png?v=2" alt=""></span><span>Dino-broto</span>
+          </button>
+          <button class="avatar-option" type="button" role="radio" aria-checked="false" data-avatar-id="sun-star">
+            <span class="avatar-option__image"><img src="assets/avatars/sun-star.png?v=2" alt=""></span><span>Estrela solar</span>
+          </button>
+        </div>
+        <small class="avatar-picker-help">Direcional navega · A confirma · B volta</small>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toastRegion" class="toast-region" role="status" aria-live="polite"></div>
+
+  <script src="js/emulator.js"></script>
+  <script src="vendor/gbajs/js/util.js"></script>
+  <script src="vendor/gbajs/js/core.js"></script>
+  <script src="vendor/gbajs/js/arm.js"></script>
+  <script src="vendor/gbajs/js/thumb.js"></script>
+  <script src="vendor/gbajs/js/mmu.js"></script>
+  <script src="vendor/gbajs/js/io.js"></script>
+  <script src="vendor/gbajs/js/audio.js"></script>
+  <script src="vendor/gbajs/js/video.js"></script>
+  <script src="vendor/gbajs/js/video/proxy.js"></script>
+  <script src="vendor/gbajs/js/video/software.js"></script>
+  <script src="vendor/gbajs/js/irq.js"></script>
+  <script src="vendor/gbajs/js/keypad.js"></script>
+  <script src="vendor/gbajs/js/sio.js"></script>
+  <script src="vendor/gbajs/js/savedata.js"></script>
+  <script src="vendor/gbajs/js/gpio.js"></script>
+  <script src="vendor/gbajs/js/gba.js"></script>
+  <script src="js/gbajs-adapter.js"></script>
+  <script src="js/gamepad.js"></script>
+  <script src="js/ui.js"></script>
+</body>
+</html>

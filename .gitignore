@@ -1,0 +1,18 @@
+# Cartuchos e dados pessoais permanecem somente no computador do usuário.
+*.gba
+*.sav
+*.state
+*.state.json
+
+# Dependências e arquivos locais do sistema.
+node_modules/
+.tools/
+.DS_Store
+Thumbs.db
+
+# Evidências geradas pelos testes de navegador.
+tests/*-browser.png
+tests/*-desktop.png
+tests/*-mobile.png
+tests/*-landscape.png
+tests/fullscreen-game-edges.png
