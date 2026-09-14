@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="assets/avatars/verdant-drake.png" width="96" alt="Avatar do Advance Home">
+  <img src="assets/avatars/sun-star.png" width="96" alt="Avatar Estrela solar do Advance Home">
   <h1>Advance Home</h1>
   <p><strong>Emulação de Game Boy Advance no navegador com uma HOME feita para controle.</strong></p>
   <p>Biblioteca visual, save states, áudio, tela cheia e controles personalizáveis — tudo processado localmente.</p>
