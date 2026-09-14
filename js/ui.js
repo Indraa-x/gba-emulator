@@ -102,7 +102,7 @@
       "selectedGameTitle", "selectedGameMeta", "uiSoundToggle", "profileAvatarButton", "profileAvatarImage",
       "profileDockButton", "profileDialog", "profilePreviewImage", "profileAvatarName", "avatarGrid",
       "quickVolumeRange", "quickVolumeValue", "quickSpeedValue",
-      "quickFilterSelect", "quickUiSoundToggle"
+      "quickFilterSelect", "quickUiSoundToggle", "softwareLibrary", "libraryEmptyHint"
     ];
     for (const id of ids) refs[id] = byId(id);
     refs.controlKeys = Array.from(document.querySelectorAll(".control-key"));
@@ -514,6 +514,15 @@
     return fallback;
   }
 
+  function updateLibraryEmptyState(gameCount) {
+    const empty = gameCount === 0;
+    refs.softwareLibrary.classList.toggle("is-library-empty", empty);
+    refs.libraryEmptyHint.hidden = !empty;
+    refs.dropZone.setAttribute("aria-label", empty
+      ? "Adicionar o primeiro jogo GBA"
+      : "Adicionar um jogo GBA");
+  }
+
   async function renderRecentGames() {
     refs.recentList.replaceChildren();
     let games = [];
@@ -572,7 +581,9 @@
       bindSoftwareCard(button);
       refs.recentList.appendChild(button);
     }
-    selectSoftwareCard(firstLocalGame);
+    const gameCount = refs.recentList.querySelectorAll(".software-card, .recent-game").length;
+    updateLibraryEmptyState(gameCount);
+    selectSoftwareCard(firstLocalGame || refs.dropZone);
   }
 
   function selectSoftwareCard(button) {

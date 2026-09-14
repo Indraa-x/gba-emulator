@@ -322,6 +322,36 @@ async function testFallbackCover(cdp) {
   await reloadAndWaitForHome(cdp);
 }
 
+async function testLibraryEmptyState(cdp) {
+  const state = await evaluate(cdp, `(() => {
+    const content = document.querySelector('#softwareLibrary');
+    const list = document.querySelector('#recentList');
+    const add = document.querySelector('#dropZone');
+    const hint = document.querySelector('#libraryEmptyHint');
+    list.replaceChildren();
+    content.classList.add('is-library-empty');
+    hint.hidden = false;
+    add.focus({ preventScroll: true });
+    add.dispatchEvent(new FocusEvent('focus'));
+    const stripRect = add.closest('.software-strip').getBoundingClientRect();
+    const addRect = add.getBoundingClientRect();
+    return {
+      hint: hint.textContent.trim(),
+      hintVisible: getComputedStyle(hint).display !== 'none',
+      centered: Math.abs((addRect.left + addRect.right) / 2 - (stripRect.left + stripRect.right) / 2) <= 16,
+      enlarged: addRect.width >= 208 && addRect.height >= 208,
+      selectedTitle: document.querySelector('#selectedGameTitle').textContent,
+      overflow: document.documentElement.scrollWidth > innerWidth || document.documentElement.scrollHeight > innerHeight
+    };
+  })()`);
+  assert.equal(state.hint, "Arraste uma ROM .gba aqui ou clique para escolher um arquivo.", "texto do estado vazio incorreto");
+  assert.equal(state.hintVisible && state.centered && state.enlarged, true, "estado vazio não centralizou e destacou Adicionar jogo");
+  assert.equal(state.selectedTitle, "Adicionar jogo", "estado vazio não selecionou a ação principal");
+  assert.equal(state.overflow, false, "estado vazio criou rolagem externa");
+  await capture(cdp, "home-empty-library-desktop.png");
+  await reloadAndWaitForHome(cdp);
+}
+
   async function testLocalCoverLaunches(cdp) {
     await reloadAndWaitForHome(cdp);
     const expectedCovers = ["BPEE", "BPRE", "BZMP", "AA2E"];
@@ -848,6 +878,7 @@ async function main() {
     await testGamepadRecovery(cdp);
     await testCustomCovers(cdp);
     await testFallbackCover(cdp);
+    await testLibraryEmptyState(cdp);
     await testAvatarPicker(cdp);
     await testFullscreenEdges(cdp);
 

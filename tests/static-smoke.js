@@ -46,6 +46,9 @@ for (const cover of [
 assert.match(ui, /function getGameCover\(game\)/, "resolvedor de capas por jogo não foi encontrado");
 assert.match(ui, /function createRecentThumbnail\(game\)[\s\S]*?game-cover--fallback[\s\S]*?createElementNS/, "fallback de capa desenhado não foi implementado");
 assert.doesNotMatch(ui.match(/function createRecentThumbnail\(game\)[\s\S]*?\n  }/)[0], /createElement\("canvas"\)|hsl\(|fillText\(/, "fallback de capa ainda usa canvas e cor aleatória");
+assert.match(html, /id="libraryEmptyHint"[^>]*>Arraste uma ROM \.gba aqui ou clique para escolher um arquivo\./, "instrução do estado vazio não foi encontrada");
+assert.match(ui, /function updateLibraryEmptyState\(gameCount\)[\s\S]*?is-library-empty[\s\S]*?updateLibraryEmptyState\(gameCount\)/, "estado vazio não é aplicado pela biblioteca");
+assert.match(css, /\.home-content\.is-library-empty \.software-card--add\s*\{[^}]*width:\s*clamp\(13rem,[^}]*height:\s*clamp\(13rem/s, "card de primeiro jogo não recebe destaque no estado vazio");
 assert.doesNotMatch(ui, /LeafGreen|leafgreen|pokemon-leafgreen-version_p5c2/, "LeafGreen ainda aparece na HOME");
 assert.match(ui, /HIDDEN_GAME_CODES = new Set\(\["B6WE"\]\)/, "FIFA 2006 nÃ£o foi removido da biblioteca");
 assert.match(ui, /!localCodes\.has\(game\.code\) && !isHiddenGame\(game\)/, "jogos ocultos ainda podem aparecer na HOME");
