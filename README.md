@@ -1,218 +1,146 @@
-# Advance Home
+<div align="center">
+  <img src="assets/avatars/verdant-drake.png" width="96" alt="Avatar do Advance Home">
+  <h1>Advance Home</h1>
+  <p><strong>Emulação de Game Boy Advance no navegador com uma HOME feita para controle.</strong></p>
+  <p>Biblioteca visual, save states, áudio, tela cheia e controles personalizáveis — tudo processado localmente.</p>
 
-Advance Home é um emulador de Game Boy Advance executado inteiramente no navegador. A interface HOME usa uma biblioteca horizontal inspirada em consoles atuais e não exige framework, build, servidor obrigatório ou dependências baixadas em tempo de execução.
+  <p>
+    <a href="https://indraa-x.github.io/gba-emulator/"><img src="https://img.shields.io/badge/ABRIR-ADVANCE_HOME-72e8f3?style=for-the-badge&labelColor=202126" alt="Abrir Advance Home"></a>
+    <a href="https://github.com/Indraa-x/gba-emulator/actions/workflows/pages.yml"><img src="https://github.com/Indraa-x/gba-emulator/actions/workflows/pages.yml/badge.svg" alt="Publicação no GitHub Pages"></a>
+    <img src="https://img.shields.io/badge/JavaScript-Vanilla-F7DF1E?style=for-the-badge&logo=javascript&logoColor=111" alt="JavaScript Vanilla">
+    <img src="https://img.shields.io/badge/ROMs-100%25_locais-b9adff?style=for-the-badge" alt="ROMs locais">
+  </p>
 
-> Projeto para estudo e preservação. A aplicação não fornece ROMs comerciais nem BIOS proprietária. Use somente cópias de jogos obtidas legalmente.
+  <a href="https://indraa-x.github.io/gba-emulator/">
+    <img src="docs/images/advance-home.png" width="100%" alt="Tela HOME do Advance Home com biblioteca de jogos">
+  </a>
+</div>
 
-## Como abrir
+> [!IMPORTANT]
+> O projeto não distribui ROMs comerciais nem BIOS proprietária. Use somente cópias de jogos obtidas legalmente. ROMs, saves e preferências permanecem no seu navegador.
 
-1. Dê dois cliques em `Iniciar Advance Home.cmd`.
-2. A HOME abrirá automaticamente no navegador em `http://127.0.0.1:8765/`.
-3. Clique na capa de **Pokémon Emerald**. O jogo será carregado diretamente, sem pedir para selecionar a ROM.
-4. Aguarde a inicialização do jogo. A primeira imagem pode levar alguns segundos para aparecer.
+## Conheça a interface
 
-Mantenha a pequena janela minimizada do **Advance Home** aberta enquanto estiver jogando. Ao iniciar um jogo, a HOME desaparece e somente a imagem do jogo permanece na tela. A capa fixa usa diretamente o arquivo `Pokemon - Emerald Version (USA, Europe).gba` colocado pelo usuário na raiz do projeto.
+<table>
+  <tr>
+    <td width="50%" align="center">
+      <strong>Menu rápido durante o jogo</strong><br><br>
+      <img src="docs/images/quick-menu.png" alt="Menu rápido do emulador">
+    </td>
+    <td width="50%" align="center">
+      <strong>Configurações completas</strong><br><br>
+      <img src="docs/images/settings.png" alt="Configurações de controle do emulador">
+    </td>
+  </tr>
+</table>
 
-O cartucho é processado localmente e não é enviado à internet. O inicializador cria apenas um servidor privado em `127.0.0.1`, acessível pelo próprio computador. Abrir `index.html` diretamente por `file://` não permite que uma página leia automaticamente um arquivo vizinho; nesse modo, use **Adicionar jogo** para outras ROMs.
+<table>
+  <tr>
+    <td width="68%" align="center">
+      <strong>10 avatares locais</strong><br><br>
+      <img src="docs/images/avatars.png" alt="Seletor de avatares do Advance Home">
+    </td>
+    <td width="32%" align="center">
+      <strong>Layout responsivo</strong><br><br>
+      <img src="docs/images/mobile.png" width="260" alt="Advance Home em uma tela de celular">
+    </td>
+  </tr>
+</table>
 
-Como alternativa manual ao inicializador, abra um terminal na pasta e execute:
+## Destaques
 
-```text
+| Experiência | Emulação e dados |
+| --- | --- |
+| HOME horizontal navegável por controle | Núcleo GBA.js executado inteiramente no navegador |
+| Capas personalizadas sem cortes ou deformações | Flash, SRAM e EEPROM persistidos no IndexedDB |
+| Menu rápido com volume, filtro e tela cheia | Cinco save states independentes por jogo |
+| Teclado e gamepad totalmente remapeáveis | Áudio PSG e Direct Sound com controle por canal |
+| Controles Bluetooth ou USB pela Gamepad API | Pokémon em 2×; Zelda e Mario em 1× |
+| Temas Ciano e Coral e 10 avatares em pixel art | Sem upload de ROMs, saves ou estados |
+
+Os sons da interface são originais e sintetizados localmente pela Web Audio API. Eles podem ser desligados em **Configurações → Áudio → Sons do menu**.
+
+## Jogar
+
+### No navegador
+
+1. Acesse **[indraa-x.github.io/gba-emulator](https://indraa-x.github.io/gba-emulator/)**.
+2. Escolha uma capa ou clique em **Adicionar jogo**.
+3. Na primeira vez, selecione sua cópia `.gba` correspondente.
+4. A ROM será validada e ficará disponível somente no IndexedDB desse navegador.
+
+### No computador
+
+1. Coloque suas ROMs `.gba` na pasta do projeto.
+2. Execute **`Iniciar Advance Home.cmd`**.
+3. A HOME abrirá em `http://127.0.0.1:8765/`.
+
+Também é possível iniciar manualmente:
+
+```powershell
 node local-server.js
 ```
 
-Depois visite `http://127.0.0.1:8765/`.
+Abrir `index.html` diretamente por `file://` não permite que o navegador leia automaticamente ROMs vizinhas. Nesse modo, use **Adicionar jogo**.
 
-### Versão publicada no GitHub Pages
+## Controles
 
-A versão pública não distribui ROMs. Clique em uma capa e escolha no seu dispositivo uma cópia `.gba` obtida legalmente. O jogo é validado, armazenado somente no IndexedDB do navegador e passa a abrir diretamente nas próximas vezes. Nenhum cartucho, save ou estado é enviado ao GitHub ou a qualquer servidor.
-
-## Correção da tela preta
-
-A tela preta era causada por limitações do interpretador ARM/THUMB inicial e por um retorno incorreto da instrução THUMB `BL`, que prendia o Pokémon Emerald em um laço durante o boot. O retorno, as transferências de PSR, o trampoline de IRQ sem BIOS e o estado inicial de `DISPCNT` foram corrigidos no núcleo educacional.
-
-Para compatibilidade real com jogos comerciais, a execução principal agora usa uma cópia local do núcleo livre **GBA.js**, adaptada à interface do Advance Lab. Também foram corrigidos pontos antigos desse núcleo que afetavam navegadores modernos e estados salvos:
-
-- herança não enumerável em `Object.prototype`;
-- buffers serializáveis de I/O, palette, VRAM e OAM;
-- restauração correta dos registradores de I/O;
-- teclado controlado somente pela interface, sem handlers duplicados;
-- polling antigo do gamepad desativado para não sobrescrever `KEYINPUT` e anular teclado, toque ou remapeamento;
-- persistência de Flash/SRAM e save states no IndexedDB;
-- BIOS livre mínima compilada de `vendor/gbajs/bios.S`, sem código proprietário da Nintendo.
-
-## Controles padrão
-
-| GBA | Teclado |
-| --- | --- |
+| GBA | Teclado padrão |
+| :--- | :---: |
 | Direcional | Setas |
-| A | X |
-| B | Z |
-| L | A |
-| R | S |
+| A / B | X / Z |
+| L / R | A / S |
 | Start | Enter |
 | Select | Shift esquerdo |
 | Menu rápido | Esc |
 
-Os atalhos podem ser remapeados em **Configurações → Controles**. Os botões visuais aceitam mouse e toque; controles físicos usam a Gamepad API.
-
-### Controle Bluetooth ou USB
-
-1. Abra **Configurações → Controles** no emulador.
-2. Clique em **Abrir Bluetooth** para abrir o pareamento do Windows.
-3. Depois de emparelhar, pressione qualquer botão no controle e clique em **Detectar controle**.
-4. Em **Mapa do controle**, clique na função desejada e pressione um botão ou mova o analógico.
-
-O emulador mostra o nome e o estado do controle, permite escolher entre vários controles conectados e salva o mapeamento no navegador. O layout inicial reconhece tanto o direcional digital quanto o analógico esquerdo. O navegador não realiza sozinho o pareamento Bluetooth de dispositivos HID; o botão abre a tela segura do sistema e a Gamepad API assume depois da conexão.
-
-Na interface, use o direcional ou o analógico para navegar, **A** para confirmar, **B** para voltar e **L/R** para trocar as abas das configurações. Durante o jogo, um toque em **Start** no controle abre o menu rápido; não é mais necessário combinar Start com Select. Todos esses comandos acompanham o remapeamento escolhido pelo usuário.
-
-No teclado, as setas navegam pela HOME, **Enter** confirma e **Esc** volta. Durante o jogo, os atalhos retornam ao mapeamento GBA configurado.
-
-A HOME possui efeitos sonoros originais e discretos para mover, confirmar, voltar, abrir menus e iniciar jogos. Eles são sintetizados localmente pela Web Audio API, sem arquivos de áudio ou sons proprietários, e podem ser desligados em **Configurações → Áudio → Sons do menu**.
-
-### Perfil local
-
-Selecione o botão de perfil rosa na barra inferior ou o avatar no canto superior esquerdo para escolher entre 10 sprites pixel-art fixos. A escolha permanece salva somente neste navegador e apenas o avatar selecionado aparece no canto superior esquerdo.
-
-## Recursos
-
-- Carregamento local e arrastar-e-soltar de ROMs de até 32 MB.
-- CPU ARM7TDMI com instruções ARM e THUMB.
-- HOME em tela inteira com capas, barra de funções, relógio e status do controle.
-- Contador de posição no carrossel, estado vazio guiado e fallback desenhado para jogos sem capa.
-- Temas de acento Ciano e Coral selecionáveis em **Configurações → Tela**.
-- Perfil local com 10 avatares pixel-art e seleção salva no navegador.
-- Efeitos sonoros leves de navegação, gerados localmente pela Web Audio API.
-- Jogo isolado em tela cheia, mantendo a proporção original de 240 × 160 sem a antiga carcaça visual.
-- Áudio PSG e Direct Sound com controle de volume.
-- Teclado remapeável, mouse, toque e gamepad.
-- Save Flash/SRAM/EEPROM persistido automaticamente no IndexedDB.
-- Cinco save states por jogo.
-- Captura PNG, tela cheia e pausa; Pokémon roda em 2× com tom natural, enquanto Zelda e Mario permanecem em 1×.
-- Biblioteca recente com miniaturas e ROMs armazenadas apenas no navegador.
+Na interface, use o direcional ou analógico para navegar, **A** para confirmar, **B** para voltar e **L/R** para trocar abas. Durante o jogo, **Start** abre o menu rápido. Todos os botões podem ser alterados em **Configurações → Controles**.
 
 ## Arquitetura
 
-```text
-index.html / style.css
-        │
-      ui.js ───────────── IndexedDB / localStorage / Gamepad API
-        │
- gbajs-adapter.js ─────── contrato da interface, saves, estados e eventos
-        │
- vendor/gbajs/js ──────── ARM7TDMI, MMU, IRQ, PPU, áudio e cartucho
-        │
-  BIOS livre mínima ───── vendor/gbajs/bios.S
+```mermaid
+flowchart LR
+  HOME[HOME e menus] --> UI[ui.js]
+  UI --> PAD[Gamepad API]
+  UI --> STORE[IndexedDB e localStorage]
+  UI --> ADAPTER[gbajs-adapter.js]
+  ADAPTER --> CORE[Núcleo GBA.js]
+  CORE --> VIDEO[PPU / Canvas]
+  CORE --> AUDIO[PSG / Direct Sound]
+  CORE --> SAVE[Flash / SRAM / EEPROM]
 ```
 
-O primeiro núcleo escrito para o projeto permanece em `js/core/` como implementação educacional e referência, mas não é carregado pela página principal. `js/emulator.js` fornece a camada de armazenamento local e o adaptador substitui seu emulador antigo pelo núcleo compatível.
+O núcleo livre **GBA.js**, criado por Jeffrey Pfau, cuida da CPU ARM7TDMI, memória, vídeo, áudio e cartucho. O `gbajs-adapter.js` conecta o núcleo à interface e ao armazenamento local. A implementação educacional original permanece em `js/core/` como referência.
 
 ## Testes
 
-A ROM `Pokemon - Emerald Version (USA, Europe).gba`, colocada localmente na raiz pelo usuário, é usada somente nos testes e não é incorporada ao código.
-
-Validação estática de HTML, referências DOM, arquivos locais e sintaxe JavaScript:
-
-```text
+```powershell
 node tests/static-smoke.js
-```
-
-Teste do núcleo, renderização e round-trip de estado:
-
-```text
-node tests/pokemon-smoke.js
-```
-
-Teste da detecção e do remapeamento de controles:
-
-```text
 node tests/gamepad-smoke.js
-```
-
-Teste da velocidade fixa por jogo (Pokémon em 2×; Zelda e Mario em 1×):
-
-```text
 node tests/speed-smoke.js
-```
-
-Teste do inicializador e do carregamento direto da ROM local:
-
-```text
-node tests/local-server-smoke.js
-```
-
-Teste de regressão do FIFA 2006 para timers em cascata e inicialização no navegador:
-
-```text
-node tests/fifa-browser-smoke.js
-```
-
-Teste visual responsivo da HOME e das configurações no Edge/Chrome:
-
-```text
+node tests/rom-compatibility-smoke.js
+node tests/pokemon-smoke.js
 node tests/layout-browser-smoke.js
-```
-
-Teste end-to-end no Microsoft Edge ou Google Chrome instalado:
-
-```text
 node tests/browser-smoke.js
 ```
 
-O teste de navegador abre a página em modo headless, carrega a ROM, espera a tela do jogo, confirma FPS e diversidade de cores, testa teclado, IndexedDB, save state, save Flash e PNG. A evidência visual fica em `tests/pokemon-browser.png`.
+Os testes cobrem integridade da interface, controles, compatibilidade de ROMs, velocidade, áudio, renderização, estados, armazenamento e layouts desktop/mobile. As ROMs usadas localmente nos testes são ignoradas pelo Git e nunca fazem parte do repositório.
 
-Resultado de referência desta correção:
+## Compatibilidade
 
-```text
-PASS: Pokémon Emerald (BPEE), 361 quadros, 31 cores, save FLASH1M_V
-PASS: navegador real; cart=BPEE; colors=16; fps=60; teclado, estado, IndexedDB, save, PNG e file:// OK
-```
+Pokémon Emerald, Pokémon FireRed, The Legend of Zelda: The Minish Cap e Super Mario Advance 2 são os principais jogos de regressão deste projeto. Periféricos incomuns, link multiplayer, sensores específicos e jogos com timing atípico ainda podem exigir melhorias.
 
-## Estrutura principal
+Save states devem ser usados com a mesma versão do projeto e a mesma ROM.
 
-```text
-.
-├── index.html
-├── style.css
-├── README.md
-├── Iniciar Advance Home.cmd
-├── local-server.js
-├── js
-│   ├── emulator.js
-│   ├── gbajs-adapter.js
-│   ├── ui.js
-│   └── core/                 núcleo educacional original
-├── tests
-│   ├── pokemon-smoke.js
-│   ├── gamepad-smoke.js
-│   ├── speed-smoke.js
-│   ├── local-server-smoke.js
-│   ├── layout-browser-smoke.js
-│   ├── generate-cover.js
-│   ├── pokemon-cover.png
-│   ├── browser-smoke.js
-│   ├── static-smoke.js
-│   └── pokemon-browser.png
-└── vendor/gbajs
-    ├── COPYING
-    ├── bios.S
-    ├── resources/bios.bin
-    └── js/                   núcleo em uso
-```
+## Privacidade e licença
 
-## Compatibilidade e limitações
+- ROMs, saves, estados, capas geradas e preferências ficam no dispositivo do usuário.
+- Limpar os dados do site no navegador remove o conteúdo armazenado localmente.
+- O núcleo GBA.js é distribuído sob a licença BSD de 2 cláusulas; consulte [`vendor/gbajs/COPYING`](vendor/gbajs/COPYING).
+- Game Boy Advance, Pokémon, Zelda, Mario e Nintendo são marcas de seus respectivos proprietários.
+- Advance Home é um projeto independente, sem afiliação ou endosso da Nintendo.
 
-A compatibilidade ficou muito maior e o Pokémon Emerald fornecido inicia e renderiza normalmente, mas nenhum emulador deve prometer compatibilidade perfeita sem uma suíte extensa de ROMs e comparação com hardware real. Periféricos pouco comuns, link multiplayer, sensores específicos e alguns jogos com timing incomum ainda podem exigir trabalho adicional.
-
-Save states são específicos desta versão do projeto e da mesma ROM.
-
-## Privacidade e armazenamento
-
-ROMs recentes, miniaturas, saves e estados ficam no IndexedDB. Preferências e remapeamento ficam no `localStorage`. Limpar os dados do site pelo navegador remove esse conteúdo local.
-
-## Licença de terceiros
-
-O núcleo GBA.js foi criado por Jeffrey Pfau e é distribuído sob a licença BSD de 2 cláusulas. O texto integral está em `vendor/gbajs/COPYING`. As modificações locais preservam esse aviso.
-
-Game Boy Advance, Pokémon e Nintendo são marcas de seus respectivos proprietários. Advance Lab é independente e não possui afiliação ou endosso desses proprietários.
+<div align="center">
+  <strong>Feito para estudar emulação, interfaces e preservação de jogos.</strong><br>
+  <a href="https://indraa-x.github.io/gba-emulator/">Abrir o Advance Home</a>
+</div>
