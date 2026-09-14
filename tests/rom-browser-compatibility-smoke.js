@@ -96,14 +96,14 @@ async function main() {
     console.log("INFO: página aberta");
 
     for (let attempt = 0; attempt < 100; attempt++) {
-      if (await evaluate(cdp, "Boolean(window.advanceLab)")) break;
+      if (await evaluate(cdp, "Boolean(window.gbaOne)")) break;
       if (attempt === 99) throw new Error("o emulador não inicializou");
       await delay(100);
     }
     console.log("INFO: interface pronta");
 
     const result = await evaluate(cdp, `(async () => {
-      const emulator = window.advanceLab;
+      const emulator = window.gbaOne;
       const branch = (from, to) => (0xea000000 | (((to - (from + 8)) >> 2) & 0x00ffffff)) >>> 0;
       const makeROM = (size, target, title) => {
         const bytes = new Uint8Array(size);

@@ -32,7 +32,7 @@ async function main() {
     const home = await request(port, "/");
     assert.equal(home.statusCode, 200, "a HOME não foi servida");
     assert.match(home.headers["content-type"] || "", /^text\/html/, "MIME da HOME incorreto");
-    assert.match(home.body.toString("utf8"), /Advance Home/, "conteúdo da HOME incorreto");
+    assert.match(home.body.toString("utf8"), /GBAOne/, "conteúdo da HOME incorreto");
 
     const rom = await request(port, `/${encodeURIComponent(LOCAL_ROM_FILENAME)}`, "HEAD");
     assert.equal(rom.statusCode, 200, "a ROM local não foi encontrada pelo servidor");

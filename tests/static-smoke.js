@@ -11,6 +11,8 @@ const ui = fs.readFileSync(path.join(root, "js", "ui.js"), "utf8");
 const adapter = fs.readFileSync(path.join(root, "js", "gbajs-adapter.js"), "utf8");
 const coreAudio = fs.readFileSync(path.join(root, "vendor", "gbajs", "js", "audio.js"), "utf8");
 const css = fs.readFileSync(path.join(root, "style.css"), "utf8");
+const readme = fs.readFileSync(path.join(root, "README.md"), "utf8");
+const localServer = fs.readFileSync(path.join(root, "local-server.js"), "utf8");
 const scriptSources = [...html.matchAll(/<script\s+src="([^"]+)"/g)].map((match) => match[1]);
 const scriptPaths = scriptSources.map((source) => source.split(/[?#]/, 1)[0]);
 
@@ -22,6 +24,12 @@ for (const [index, source] of scriptSources.entries()) {
 assert.ok(scriptPaths.indexOf("js/emulator.js") < scriptPaths.indexOf("vendor/gbajs/js/gba.js"), "ordem incorreta do armazenamento");
 assert.ok(scriptPaths.indexOf("vendor/gbajs/js/gba.js") < scriptPaths.indexOf("js/gbajs-adapter.js"), "adaptador carregado antes do núcleo");
 assert.equal(scriptPaths.at(-1), "js/ui.js", "ui.js deve inicializar por último");
+assert.match(html, /<title>GBAOne<\/title>/, "o título público do emulador não foi renomeado");
+assert.match(html, /name="application-name" content="GBAOne"/, "o nome do aplicativo não foi definido");
+assert.equal((html.match(/GBAONE/g) || []).length, 2, "o nome GBAOne deve aparecer no menu rápido e nas configurações");
+assert.doesNotMatch(`${html}\n${readme}\n${localServer}`, /Advance Home|ADVANCE HOME/, "o nome público antigo ainda aparece no projeto");
+assert.match(ui, /window\.gbaOne = emulator/, "a API pública do emulador não usa o novo nome");
+assert.doesNotMatch(ui, /advanceLab|advance-lab-link/, "a interface ainda expõe integrações com o nome antigo");
 assert.match(html, /class="software-strip"/, "biblioteca horizontal de jogos não foi encontrada");
 assert.match(html, /class="system-dock"/, "barra inferior de funções não foi encontrada");
 assert.match(html, /class="system-dock"[\s\S]*class="selected-software-copy"/, "o nome selecionado deve aparecer abaixo da barra como no Switch 2");
@@ -107,7 +115,7 @@ assert.match(css, /\.selected-software-copy p\s*{[^}]*text-overflow:\s*ellipsis[
 assert.match(ui, /function revealNavigationTarget\(element\)[\s\S]*?strip\.scrollLeft = Math\.max[\s\S]*?document\.scrollingElement/, "navegação entre jogos ainda pode deslocar a página inteira");
 assert.match(ui, /function pollGamepads\(\)\s*{\s*[\s\S]*?requestAnimationFrame\(pollGamepads\);\s*try\s*{/, "uma falha de interface ainda pode desligar o polling do controle");
 assert.match(html, /style\.css\?v=6/, "a folha visual atual não possui invalidação do cache público");
-assert.match(html, /js\/ui\.js\?v=8/, "a versão atual da interface não possui invalidação do cache público");
+assert.match(html, /js\/ui\.js\?v=9/, "a versão atual da interface não possui invalidação do cache público");
 assert.match(html, /id="screenshotBtn"[^>]*hidden/, "ícone da câmera ainda aparece na barra principal");
 for (const selector of ["controls", "saves", "audio"]) {
   assert.match(css, new RegExp(`\\.system-button\\[data-open-settings="${selector}"\\]\\s*\\{\\s*--icon-color:`), `ícone sem cor própria: ${selector}`);
@@ -197,8 +205,9 @@ assert.match(css, /\.settings-head h2\s*\{[^}]*font-family:\s*var\(--display-fon
 assert.match(css, /\.software-card:active,[\s\S]*?\.quick-grid button:active\s*\{[^}]*scale\(\.97\)/, "feedback tátil de pressionamento não foi aplicado");
 
 assert.ok(fs.existsSync(path.join(root, "vendor", "gbajs", "COPYING")), "licença BSD do núcleo ausente");
-assert.ok(fs.existsSync(path.join(root, "Iniciar Advance Home.cmd")), "inicializador de um clique ausente");
-const launcher = fs.readFileSync(path.join(root, "Iniciar Advance Home.cmd"), "utf8");
+assert.ok(fs.existsSync(path.join(root, "Iniciar GBAOne.cmd")), "inicializador de um clique ausente");
+const launcher = fs.readFileSync(path.join(root, "Iniciar GBAOne.cmd"), "utf8");
+assert.match(launcher, /start "GBAOne"/, "o inicializador ainda usa o nome antigo");
 assert.match(launcher, /local-server\.js/, "o inicializador não inicia o servidor local");
 assert.match(launcher, /http:\/\/127\.0\.0\.1:8765\//, "o inicializador não abre a HOME no navegador");
 console.log(`PASS: HTML íntegro, ${scriptSources.length} scripts locais, ${referencedIds.length} referências DOM e ${javascript.length} arquivos JS válidos`);

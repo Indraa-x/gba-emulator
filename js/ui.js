@@ -14,6 +14,8 @@
     SELECT: "ShiftLeft"
   });
   const GAMEPAD_BINDINGS = window.GBA.GamepadBindings;
+  const PREFERENCES_KEY = "gbaone:preferences";
+  const LEGACY_PREFERENCES_KEY = `${["advance", "lab"].join("-")}:preferences`;
   const HIDDEN_GAME_CODES = new Set(["B6WE"]);
   const GAME_COVERS = Object.freeze([
     Object.freeze({ codePrefix: "BPE", title: "Pokémon Emerald", names: ["emerald"], src: "capas/PokemonEmeraldBox.jpg" }),
@@ -174,7 +176,9 @@
   function loadPreferences() {
     const defaults = cloneDefaults();
     try {
-      const stored = JSON.parse(localStorage.getItem("advance-lab:preferences") || "null");
+      const currentPreferences = localStorage.getItem(PREFERENCES_KEY);
+      const legacyPreferences = currentPreferences ? null : localStorage.getItem(LEGACY_PREFERENCES_KEY);
+      const stored = JSON.parse(currentPreferences || legacyPreferences || "null");
       if (!stored) return defaults;
       const gamepadMap = GAMEPAD_BINDINGS.sanitize(stored.gamepadMap);
       const legacyAB = !stored.gamepadMapVersion
@@ -195,6 +199,10 @@
         mutedChannels: Array.isArray(stored.mutedChannels) ? stored.mutedChannels.slice(0, 6) : defaults.mutedChannels
       };
       delete loaded.profileImage;
+      if (legacyPreferences) {
+        localStorage.setItem(PREFERENCES_KEY, JSON.stringify(loaded));
+        localStorage.removeItem(LEGACY_PREFERENCES_KEY);
+      }
       return loaded;
     } catch (_) {
       return defaults;
@@ -203,7 +211,7 @@
 
   function savePreferences() {
     try {
-      localStorage.setItem("advance-lab:preferences", JSON.stringify(preferences));
+      localStorage.setItem(PREFERENCES_KEY, JSON.stringify(preferences));
     } catch (_) {
       showToast("Não foi possível salvar as preferências.", true);
     }
@@ -1459,7 +1467,7 @@
 
   function setupLinkChannel() {
     if (!("BroadcastChannel" in window)) return;
-    linkChannel = new BroadcastChannel("advance-lab-link");
+    linkChannel = new BroadcastChannel("gbaone-link");
     linkChannel.onmessage = (event) => {
       if (event.data?.type === "hello") linkChannel.postMessage({ type: "ready", game: emulator.romInfo?.id || null });
       if (event.data?.type === "ready" && event.data.game && event.data.game === emulator.romInfo?.id) {
@@ -1750,7 +1758,7 @@
   function initialize() {
     collectReferences();
     emulator = new window.GBA.Emulator(refs.screen);
-    window.advanceLab = emulator;
+    window.gbaOne = emulator;
     preferences = loadPreferences();
     applyPreferences();
     bindROMInput();

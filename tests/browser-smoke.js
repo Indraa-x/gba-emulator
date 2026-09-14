@@ -138,7 +138,7 @@ async function main() {
   assert.ok(edge, "Edge/Chrome não encontrado para o teste de navegador");
   assert.ok(fs.existsSync(path.join(root, "Pokemon - Emerald Version (USA, Europe).gba")), "ROM de teste ausente");
 
-  const profile = fs.mkdtempSync(path.join(os.tmpdir(), "advance-lab-edge-"));
+  const profile = fs.mkdtempSync(path.join(os.tmpdir(), "gbaone-edge-"));
   const server = createServer();
   await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
   const { port: serverPort } = server.address();
@@ -190,14 +190,14 @@ async function main() {
     await cdp.call("Input.dispatchMouseEvent", { type: "mouseReleased", x: screenPoint.result.value.x, y: screenPoint.result.value.y, button: "left", buttons: 0, clickCount: 1 });
     await delay(150);
     const audioContextState = await cdp.call("Runtime.evaluate", {
-      expression: "window.advanceLab.core.audio.context?.state || 'unavailable'",
+      expression: "window.gbaOne.core.audio.context?.state || 'unavailable'",
       returnByValue: true
     });
     assert.equal(audioContextState.result.value, "running", "primeiro clique não desbloqueou o áudio no navegador");
 
     const featureResult = await cdp.call("Runtime.evaluate", {
       expression: `(async () => {
-        const emulator = window.advanceLab;
+        const emulator = window.gbaOne;
         document.dispatchEvent(new KeyboardEvent("keydown", { code: "KeyX", bubbles: true }));
         const keyPressed = (emulator.core.keypad.currentDown & 1) === 0;
         document.dispatchEvent(new KeyboardEvent("keyup", { code: "KeyX", bubbles: true }));
@@ -276,7 +276,7 @@ async function main() {
     });
     await delay(150);
     await cdp.call("Runtime.evaluate", {
-      expression: "window.advanceLab.saveState(6)",
+      expression: "window.gbaOne.saveState(6)",
       awaitPromise: true,
       returnByValue: true
     });
@@ -288,7 +288,7 @@ async function main() {
     for (let attempt = 0; attempt < 30; attempt++) {
       await delay(100);
       const restoreResult = await cdp.call("Runtime.evaluate", {
-        expression: "document.querySelector('#gameView').classList.contains('view--active') && !window.advanceLab.paused",
+        expression: "document.querySelector('#gameView').classList.contains('view--active') && !window.gbaOne.paused",
         returnByValue: true
       });
       restoredToGame = restoreResult.result.value;
@@ -303,19 +303,19 @@ async function main() {
       { control: "DOWN", button: 13, bit: 7 }, { control: "R", button: 5, bit: 8 },
       { control: "L", button: 4, bit: 9 }
     ];
-    assert.equal(await evaluate(cdp, "window.advanceLab.core.keypad.currentDown === 0x03ff"), true, "algum botão ficou preso depois de carregar o estado");
+    assert.equal(await evaluate(cdp, "window.gbaOne.core.keypad.currentDown === 0x03ff"), true, "algum botão ficou preso depois de carregar o estado");
     for (const input of gamepadInputs) {
       await evaluate(cdp, `window.__stateRestoreGamepad.buttons[${input.button}].pressed = true; window.__stateRestoreGamepad.buttons[${input.button}].value = 1; true`);
       await delay(90);
       assert.equal(
-        await evaluate(cdp, `(window.advanceLab.core.keypad.currentDown & (1 << ${input.bit})) === 0`),
+        await evaluate(cdp, `(window.gbaOne.core.keypad.currentDown & (1 << ${input.bit})) === 0`),
         true,
         `${input.control}: controle não pressionou o botão dentro do jogo`
       );
       await evaluate(cdp, `window.__stateRestoreGamepad.buttons[${input.button}].pressed = false; window.__stateRestoreGamepad.buttons[${input.button}].value = 0; true`);
       await delay(90);
       assert.equal(
-        await evaluate(cdp, `(window.advanceLab.core.keypad.currentDown & (1 << ${input.bit})) !== 0`),
+        await evaluate(cdp, `(window.gbaOne.core.keypad.currentDown & (1 << ${input.bit})) !== 0`),
         true,
         `${input.control}: controle não liberou o botão dentro do jogo`
       );
@@ -330,10 +330,10 @@ async function main() {
     await delay(90);
     await evaluate(cdp, "window.__stateRestoreGamepad.buttons[0].pressed = false; window.__stateRestoreGamepad.buttons[0].value = 0; true");
     await delay(90);
-    assert.equal(await evaluate(cdp, "document.querySelector('#gameView').classList.contains('view--active') && !window.advanceLab.paused"), true, "B do controle não retornou do menu ao jogo");
+    assert.equal(await evaluate(cdp, "document.querySelector('#gameView').classList.contains('view--active') && !window.gbaOne.paused"), true, "B do controle não retornou do menu ao jogo");
     await cdp.call("Runtime.evaluate", {
       expression: `(async () => {
-        await window.advanceLab.deleteState(6);
+        await window.gbaOne.deleteState(6);
         if (window.__originalGetGamepadsDescriptor) {
           Object.defineProperty(navigator, 'getGamepads', window.__originalGetGamepadsDescriptor);
         } else {
@@ -400,8 +400,8 @@ async function main() {
           const filename = ${JSON.stringify(game.filename)};
           const response = await fetch('/' + encodeURIComponent(filename));
           if (!response.ok) throw new Error('HTTP ' + response.status + ' ao carregar ' + filename);
-          await window.advanceLab.loadROM(await response.arrayBuffer(), filename, true);
-          return { code: window.advanceLab.romInfo.code, id: window.advanceLab.romInfo.id };
+          await window.gbaOne.loadROM(await response.arrayBuffer(), filename, true);
+          return { code: window.gbaOne.romInfo.code, id: window.gbaOne.romInfo.id };
         })()`,
         awaitPromise: true,
         returnByValue: true
@@ -423,9 +423,9 @@ async function main() {
       for (const control of ["START", "START", "A"]) {
         await cdp.call("Runtime.evaluate", {
           expression: `(async () => {
-            window.advanceLab.pressKey('${control}');
+            window.gbaOne.pressKey('${control}');
             await new Promise((resolve) => setTimeout(resolve, 90));
-            window.advanceLab.releaseKey('${control}');
+            window.gbaOne.releaseKey('${control}');
             return true;
           })()`,
           awaitPromise: true,
@@ -435,7 +435,7 @@ async function main() {
       }
       const diagnostic = await cdp.call("Runtime.evaluate", {
         expression: `(() => {
-          const emulator = window.advanceLab;
+          const emulator = window.gbaOne;
           const audio = emulator.core.audio;
           const pixels = document.querySelector('#screen').getContext('2d').getImageData(0, 0, 240, 160).data;
           const colors = new Set();
@@ -487,7 +487,7 @@ async function main() {
     for (const game of realROMs) {
       const storedResult = await cdp.call("Runtime.evaluate", {
         expression: `(async () => {
-          const emulator = window.advanceLab;
+          const emulator = window.gbaOne;
           await emulator.loadStoredROM(${JSON.stringify(game.id)});
           await new Promise((resolve) => setTimeout(resolve, 4500));
           const pixels = document.querySelector('#screen').getContext('2d').getImageData(0, 0, 240, 160).data;
@@ -517,7 +517,7 @@ async function main() {
 
     const compatibilityResult = await cdp.call("Runtime.evaluate", {
       expression: `(async () => {
-        const emulator = window.advanceLab;
+        const emulator = window.gbaOne;
         const rom = new Uint8Array(16 * 1024 * 1024);
         const view = new DataView(rom.buffer);
         view.setUint32(0, 0xea40001e, true); // 0x08000000 -> 0x09000080
@@ -549,7 +549,7 @@ async function main() {
     await cdp.call("Page.navigate", { url: pathToFileURL(path.join(root, "index.html")).href });
     await delay(2500);
     const fileResult = await cdp.call("Runtime.evaluate", {
-      expression: "JSON.stringify({ ready: Boolean(window.advanceLab), status: document.getElementById('appStatus')?.textContent, canvas: document.getElementById('screen')?.width + 'x' + document.getElementById('screen')?.height })",
+      expression: "JSON.stringify({ ready: Boolean(window.gbaOne), status: document.getElementById('appStatus')?.textContent, canvas: document.getElementById('screen')?.width + 'x' + document.getElementById('screen')?.height })",
       returnByValue: true
     });
     const fileMode = JSON.parse(fileResult.result.value || "{}");

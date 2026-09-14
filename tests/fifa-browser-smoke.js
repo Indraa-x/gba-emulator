@@ -90,13 +90,13 @@ async function main() {
     await cdp.call("Page.navigate", { url: `http://${HOST}:${server.address().port}/` });
 
     for (let attempt = 0; attempt < 100; attempt++) {
-      if (await evaluate(cdp, "Boolean(window.advanceLab)")) break;
+      if (await evaluate(cdp, "Boolean(window.gbaOne)")) break;
       if (attempt === 99) throw new Error("o emulador nao inicializou");
       await delay(100);
     }
 
     const romInfo = await evaluate(cdp, `(async () => {
-      const emulator = window.advanceLab;
+      const emulator = window.gbaOne;
       const response = await fetch('/' + encodeURIComponent(${JSON.stringify(romFilename)}));
       if (!response.ok) throw new Error('HTTP ' + response.status);
       const info = await emulator.loadROM(await response.arrayBuffer(), ${JSON.stringify(romFilename)}, false);
@@ -127,12 +127,12 @@ async function main() {
     await cdp.call("Input.dispatchMouseEvent", { type: "mouseReleased", x: screenPoint.x, y: screenPoint.y, button: "left", buttons: 0, clickCount: 1 });
 
     for (let attempt = 0; attempt < 100; attempt++) {
-      if (await evaluate(cdp, "Boolean(window.advanceLab.lastError)")) break;
+      if (await evaluate(cdp, "Boolean(window.gbaOne.lastError)")) break;
       await delay(100);
     }
 
     const result = await evaluate(cdp, `(() => {
-      const emulator = window.advanceLab;
+      const emulator = window.gbaOne;
       const pixels = document.querySelector('#screen').getContext('2d').getImageData(0, 0, 240, 160).data;
       const colors = new Set();
       for (let index = 0; index < pixels.length; index += 16) colors.add(pixels[index] + ',' + pixels[index + 1] + ',' + pixels[index + 2]);

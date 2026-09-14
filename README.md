@@ -1,18 +1,18 @@
 <div align="center">
-  <img src="assets/avatars/sun-star.png" width="96" alt="Avatar Estrela solar do Advance Home">
-  <h1>Advance Home</h1>
+  <img src="assets/avatars/sun-star.png" width="96" alt="Avatar Estrela solar do GBAOne">
+  <h1>GBAOne</h1>
   <p><strong>Emulação de Game Boy Advance no navegador com uma HOME feita para controle.</strong></p>
   <p>Biblioteca visual, save states, áudio, tela cheia e controles personalizáveis — tudo processado localmente.</p>
 
   <p>
-    <a href="https://indraa-x.github.io/gba-emulator/"><img src="https://img.shields.io/badge/ABRIR-ADVANCE_HOME-72e8f3?style=for-the-badge&labelColor=202126" alt="Abrir Advance Home"></a>
+    <a href="https://indraa-x.github.io/gba-emulator/"><img src="https://img.shields.io/badge/ABRIR-GBAONE-72e8f3?style=for-the-badge&labelColor=202126" alt="Abrir GBAOne"></a>
     <a href="https://github.com/Indraa-x/gba-emulator/actions/workflows/pages.yml"><img src="https://github.com/Indraa-x/gba-emulator/actions/workflows/pages.yml/badge.svg" alt="Publicação no GitHub Pages"></a>
     <img src="https://img.shields.io/badge/JavaScript-Vanilla-F7DF1E?style=for-the-badge&logo=javascript&logoColor=111" alt="JavaScript Vanilla">
     <img src="https://img.shields.io/badge/ROMs-100%25_locais-b9adff?style=for-the-badge" alt="ROMs locais">
   </p>
 
   <a href="https://indraa-x.github.io/gba-emulator/">
-    <img src="docs/images/advance-home.png" width="100%" alt="Tela HOME do Advance Home com uma biblioteca local preenchida">
+    <img src="docs/images/gbaone-home.png" width="100%" alt="Tela HOME do GBAOne com uma biblioteca local preenchida">
   </a>
 </div>
 
@@ -38,11 +38,11 @@
   <tr>
     <td width="68%" align="center">
       <strong>10 avatares locais</strong><br><br>
-      <img src="docs/images/avatars.png" alt="Seletor de avatares do Advance Home">
+      <img src="docs/images/avatars.png" alt="Seletor de avatares do GBAOne">
     </td>
     <td width="32%" align="center">
       <strong>Layout responsivo</strong><br><br>
-      <img src="docs/images/mobile.png" width="260" alt="Advance Home em uma tela de celular">
+      <img src="docs/images/mobile.png" width="260" alt="GBAOne em uma tela de celular">
     </td>
   </tr>
 </table>
@@ -71,7 +71,7 @@ Os sons da interface são originais e sintetizados localmente pela Web Audio API
 
 ### No computador
 
-1. Execute **`Iniciar Advance Home.cmd`**.
+1. Execute **`Iniciar GBAOne.cmd`**.
 2. A HOME abrirá em `http://127.0.0.1:8765/`.
 3. Use **Adicionar jogo** e escolha uma ROM `.gba`; ela continuará disponível nesse navegador.
 
@@ -138,9 +138,9 @@ Save states devem ser usados com a mesma versão do projeto e a mesma ROM.
 - Limpar os dados do site no navegador remove o conteúdo armazenado localmente.
 - O núcleo GBA.js é distribuído sob a licença BSD de 2 cláusulas; consulte [`vendor/gbajs/COPYING`](vendor/gbajs/COPYING).
 - Game Boy Advance, Pokémon, Zelda, Mario e Nintendo são marcas de seus respectivos proprietários.
-- Advance Home é um projeto independente, sem afiliação ou endosso da Nintendo.
+- GBAOne é um projeto independente, sem afiliação ou endosso da Nintendo.
 
 <div align="center">
   <strong>Feito para estudar emulação, interfaces e preservação de jogos.</strong><br>
-  <a href="https://indraa-x.github.io/gba-emulator/">Abrir o Advance Home</a>
+  <a href="https://indraa-x.github.io/gba-emulator/">Abrir o GBAOne</a>
 </div>

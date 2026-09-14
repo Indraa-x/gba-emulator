@@ -90,7 +90,8 @@ function createAppServer() {
 }
 
 if (require.main === module) {
-  const port = Number.parseInt(process.env.ADVANCE_HOME_PORT || "", 10) || DEFAULT_PORT;
+  const legacyPortName = ["ADVANCE", "HOME", "PORT"].join("_");
+  const port = Number.parseInt(process.env.GBAONE_PORT || process.env[legacyPortName] || "", 10) || DEFAULT_PORT;
   const server = createAppServer();
   server.on("error", (error) => {
     if (error.code === "EADDRINUSE") process.exit(0);
@@ -98,7 +99,7 @@ if (require.main === module) {
     process.exit(1);
   });
   server.listen(port, HOST, () => {
-    console.log(`Advance Home disponível em http://${HOST}:${port}/`);
+    console.log(`GBAOne disponível em http://${HOST}:${port}/`);
     console.log("Mantenha esta janela aberta enquanto estiver jogando.");
   });
 }

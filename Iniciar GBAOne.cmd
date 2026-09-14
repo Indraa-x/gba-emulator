@@ -10,7 +10,7 @@ if errorlevel 1 (
   exit /b 1
 )
 
-start "Advance Home" /min node "%~dp0local-server.js"
+start "GBAOne" /min node "%~dp0local-server.js"
 timeout /t 1 /nobreak >nul
 start "" "http://127.0.0.1:8765/"
 endlocal

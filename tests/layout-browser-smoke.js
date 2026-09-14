@@ -307,7 +307,7 @@ async function seedSavedLibrary(cdp) {
   await evaluate(cdp, `(async () => {
     const games = ${JSON.stringify(games)};
     for (let index = 0; index < games.length; index++) {
-      await window.advanceLab.database.put('games', {
+      await window.gbaOne.database.put('games', {
         ...games[index],
         loadedAt: Date.now() - index,
         thumbnail: null,
@@ -321,7 +321,7 @@ async function seedSavedLibrary(cdp) {
 
 async function testFallbackCover(cdp) {
   await evaluate(cdp, `(async () => {
-    await window.advanceLab.database.put('games', {
+    await window.gbaOne.database.put('games', {
       id: 'fallback-cover-smoke', code: 'TEST', title: 'Cartucho sem arte',
       filename: 'Cartucho sem arte.gba', loadedAt: Date.now(), thumbnail: null, rom: new ArrayBuffer(192)
     });
@@ -344,7 +344,7 @@ async function testFallbackCover(cdp) {
   assert.equal(fallback.title, "Cartucho sem arte", "fallback não mostra o título do jogo");
   assert.match(fallback.background, /gradient/i, "fallback não acompanha os painéis da interface");
   await capture(cdp, "home-fallback-cover-desktop.png");
-  await evaluate(cdp, `window.advanceLab.database.delete('games', 'fallback-cover-smoke')`);
+  await evaluate(cdp, `window.gbaOne.database.delete('games', 'fallback-cover-smoke')`);
   await reloadAndWaitForHome(cdp);
 }
 
@@ -379,7 +379,7 @@ async function testLibraryEmptyState(cdp) {
 
 async function testHiddenFifa(cdp) {
   await evaluate(cdp, `(async () => {
-    await window.advanceLab.database.put('games', {
+    await window.gbaOne.database.put('games', {
       id: 'hidden-fifa-2006',
       code: 'B6WE',
       title: '2006 FIFA World Cup',
@@ -497,7 +497,7 @@ async function testDeleteMode(cdp) {
   const thirdGameId = "delete-nav-third";
   await evaluate(cdp, `(async () => {
     const now = Date.now();
-    await window.advanceLab.database.put('games', {
+    await window.gbaOne.database.put('games', {
       id: '${gameId}',
       code: 'TST1',
       title: 'Jogo para excluir',
@@ -506,20 +506,20 @@ async function testDeleteMode(cdp) {
       rom: new ArrayBuffer(192),
       thumbnail: null
     });
-    await window.advanceLab.database.put('saves', {
+    await window.gbaOne.database.put('saves', {
       id: '${gameId}',
       timestamp: Date.now(),
       type: 'SRAM',
       data: new ArrayBuffer(32)
     });
-    await window.advanceLab.database.put('states', {
+    await window.gbaOne.database.put('states', {
       id: '${gameId}:2',
       romId: '${gameId}',
       slot: 2,
       timestamp: Date.now(),
       state: {}
     });
-    await window.advanceLab.database.put('games', {
+    await window.gbaOne.database.put('games', {
       id: '${secondGameId}',
       code: 'TST2',
       title: 'Segundo jogo',
@@ -528,7 +528,7 @@ async function testDeleteMode(cdp) {
       rom: new ArrayBuffer(192),
       thumbnail: null
     });
-    await window.advanceLab.database.put('games', {
+    await window.gbaOne.database.put('games', {
       id: '${thirdGameId}',
       code: 'TST3',
       title: 'Terceiro jogo',
@@ -662,9 +662,9 @@ async function testDeleteMode(cdp) {
   for (let attempt = 0; attempt < 50; attempt++) {
     const deleted = await evaluate(cdp, `(async () => {
       const [stored, save, states] = await Promise.all([
-        window.advanceLab.database.get('games', '${gameId}'),
-        window.advanceLab.database.get('saves', '${gameId}'),
-        window.advanceLab.database.getAll('states')
+        window.gbaOne.database.get('games', '${gameId}'),
+        window.gbaOne.database.get('saves', '${gameId}'),
+        window.gbaOne.database.getAll('states')
       ]);
       const orphanState = states.some((state) => state.romId === '${gameId}');
       return !stored && !save && !orphanState && !document.querySelector('.recent-game[data-game-id="${gameId}"]');
@@ -684,8 +684,8 @@ async function testDeleteMode(cdp) {
   assert.deepEqual(restored, { dialogOpen: false, deleteMode: false, trashHidden: false, pokemonExists: true, otherGamesRemain: true, redTargets: 0 }, "HOME nao foi restaurada apos excluir somente a ROM escolhida");
 
   await evaluate(cdp, `(async () => {
-    await window.advanceLab.database.deleteGame('${secondGameId}');
-    await window.advanceLab.database.deleteGame('${thirdGameId}');
+    await window.gbaOne.database.deleteGame('${secondGameId}');
+    await window.gbaOne.database.deleteGame('${thirdGameId}');
     Object.defineProperty(navigator, 'getGamepads', { configurable: true, value: () => [] });
     delete window.__deleteTestGamepad;
     return true;
@@ -720,7 +720,7 @@ async function testAvatarPicker(cdp) {
     const avatar = document.querySelector('#profileAvatarImage');
     const preview = document.querySelector('#profilePreviewImage');
     const source = avatar.getAttribute('src') || '';
-    const stored = JSON.parse(localStorage.getItem('advance-lab:preferences') || '{}');
+    const stored = JSON.parse(localStorage.getItem('gbaone:preferences') || '{}');
     const options = [...document.querySelectorAll('.avatar-option')];
     const selected = options.filter((option) => option.getAttribute('aria-checked') === 'true');
     const imageRects = options.map((option) => {
@@ -758,7 +758,7 @@ async function testAvatarPicker(cdp) {
   await capture(cdp, "home-profile-desktop.png");
   await reloadAndWaitForHome(cdp);
   const persisted = await evaluate(cdp, `(() => ({
-    avatar: JSON.parse(localStorage.getItem('advance-lab:preferences') || '{}').profileAvatar,
+    avatar: JSON.parse(localStorage.getItem('gbaone:preferences') || '{}').profileAvatar,
     source: document.querySelector('#profileAvatarImage').getAttribute('src')
   }))()`);
   assert.deepEqual(persisted, { avatar: "coral-mole", source: "assets/avatars/coral-mole.png?v=2" }, "avatar não continuou selecionado após recarregar");
@@ -833,7 +833,7 @@ async function testThemePicker(cdp) {
     return {
       theme: document.documentElement.dataset.theme,
       selected: document.querySelector('#themeSelect').value,
-      stored: JSON.parse(localStorage.getItem('advance-lab:preferences') || '{}').theme,
+      stored: JSON.parse(localStorage.getItem('gbaone:preferences') || '{}').theme,
       accent: foreground,
       contrast: (high + .05) / (low + .05)
     };
@@ -854,7 +854,7 @@ async function testThemePicker(cdp) {
 async function main() {
   const browserPath = edgeCandidates.find(fs.existsSync);
   assert.ok(browserPath, "Edge/Chrome não encontrado para o teste visual");
-  const profile = fs.mkdtempSync(path.join(os.tmpdir(), "advance-home-layout-"));
+  const profile = fs.mkdtempSync(path.join(os.tmpdir(), "gbaone-layout-"));
   const server = createAppServer();
   await new Promise((resolve, reject) => {
     server.once("error", reject);
@@ -1011,7 +1011,7 @@ async function main() {
       return true;
     })()`);
     const quickPreferences = await evaluate(cdp, `(() => {
-      const stored = JSON.parse(localStorage.getItem('advance-lab:preferences') || '{}');
+      const stored = JSON.parse(localStorage.getItem('gbaone:preferences') || '{}');
       return {
         volume: stored.volume,
         filter: stored.filter,

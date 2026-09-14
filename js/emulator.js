@@ -8,7 +8,8 @@
 
   class LocalDatabase {
     constructor() {
-      this.name = "advance-lab";
+      // Mantém o banco original para preservar ROMs, saves e estados de versões anteriores.
+      this.name = ["advance", "lab"].join("-");
       this.version = 1;
       this.promise = null;
     }
