@@ -495,13 +495,13 @@ button:disabled {
   fill: currentColor;
 }
 
-.system-button--profile { --icon-color: #ff6175; }
-.system-button[data-open-settings="controls"] { --icon-color: #8277ed; }
-.system-button[data-open-settings="saves"] { --icon-color: #ff9e32; }
-.system-button[data-open-settings="audio"] { --icon-color: #55c96a; }
-#screenshotBtn { --icon-color: #39c8d7; }
-#fullscreenBtn { --icon-color: #aa78e7; }
-#settingsBtn { --icon-color: #e7b536; }
+.system-button--profile { --icon-color: var(--pink); }
+.system-button[data-open-settings="controls"] { --icon-color: var(--cyan); }
+.system-button[data-open-settings="saves"] { --icon-color: var(--lavender); }
+.system-button[data-open-settings="audio"] { --icon-color: var(--cyan); }
+#screenshotBtn { --icon-color: var(--cyan); }
+#fullscreenBtn { --icon-color: var(--lavender); }
+#settingsBtn { --icon-color: var(--cyan); }
 
 .system-button--red,
 .system-button--profile {
@@ -517,7 +517,7 @@ button:disabled {
 .system-button--profile:focus-visible,
 .system-button--profile.gamepad-focus {
   color: #fff;
-  background: #ff7182;
+  background: color-mix(in srgb, var(--pink) 88%, #fff);
 }
 
 .dock-logo {

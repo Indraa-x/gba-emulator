@@ -145,7 +145,7 @@ function assertHomeLayout(layout, label) {
   if (layout.viewport.width > 760) {
     assert.ok(layout.dockWidthRatio >= .62 && layout.dockWidthRatio <= .7, `${label}: barra principal fora da proporção do Switch 2 (${layout.dockWidthRatio.toFixed(3)})`);
     assert.ok(layout.cardStartRatio >= .05 && layout.cardStartRatio <= .12, `${label}: capas fora da margem horizontal esperada (${layout.cardStartRatio.toFixed(3)})`);
-    assert.ok(layout.dockIconColorCount >= 6, `${label}: ícones da barra não possuem cores distintas`);
+    assert.ok(layout.dockIconColorCount >= 3 && layout.dockIconColorCount <= 4, `${label}: paleta do dock não está unificada (${layout.dockIconColorCount} cores)`);
   }
   assert.equal(layout.footerChildrenInside, true, `${label}: dicas inferiores foram cortadas (${layout.footerBounds.left.toFixed(1)}–${layout.footerBounds.right.toFixed(1)}; rodapé ${layout.footer.left.toFixed(1)}–${layout.footer.right.toFixed(1)})`);
 }

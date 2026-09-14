@@ -106,6 +106,7 @@ for (const selector of ["controls", "saves", "audio"]) {
 for (const selector of ["screenshotBtn", "fullscreenBtn", "settingsBtn"]) {
   assert.match(css, new RegExp(`#${selector}\\s*\\{\\s*--icon-color:`), `ícone sem cor própria: ${selector}`);
 }
+assert.doesNotMatch(css, /\.system-button[^\n]*--icon-color:\s*(?:#8277ed|#ff9e32|#55c96a|#e7b536|#aa78e7|#39c8d7)/i, "dock ainda usa a paleta arco-íris antiga");
 assert.match(ui, /settingsPanelScroller\.scrollTop = 0/, "trocar de aba não retorna o conteúdo do menu ao topo");
 
 assert.doesNotMatch(html, /clearRecentBtn|deleteGameDialog|deleteGameConfirmBtn|danger-button/, "a interface ainda exibe controles para excluir jogos");
