@@ -47,6 +47,9 @@ assert.match(ui, /function getGameCover\(game\)/, "resolvedor de capas por jogo 
 assert.match(ui, /function createRecentThumbnail\(game\)[\s\S]*?game-cover--fallback[\s\S]*?createElementNS/, "fallback de capa desenhado não foi implementado");
 assert.doesNotMatch(ui.match(/function createRecentThumbnail\(game\)[\s\S]*?\n  }/)[0], /createElement\("canvas"\)|hsl\(|fillText\(/, "fallback de capa ainda usa canvas e cor aleatória");
 assert.match(html, /id="libraryEmptyHint"[^>]*>Arraste uma ROM \.gba aqui ou clique para escolher um arquivo\./, "instrução do estado vazio não foi encontrada");
+assert.match(html, /id="libraryPosition"[^>]*aria-live="polite"/, "indicador acessível do carrossel não foi encontrado");
+assert.match(ui, /refs\.libraryPosition\.textContent = `\$\{position\} \/ \$\{total\}`/, "posição do carrossel não acompanha a seleção");
+assert.match(css, /\.library-position\s*\{[^}]*border-radius:\s*999px[^}]*color:\s*var\(--cyan\)/s, "indicador do carrossel não segue a linguagem visual");
 assert.match(ui, /function updateLibraryEmptyState\(gameCount\)[\s\S]*?is-library-empty[\s\S]*?updateLibraryEmptyState\(gameCount\)/, "estado vazio não é aplicado pela biblioteca");
 assert.match(css, /\.home-content\.is-library-empty \.software-card--add\s*\{[^}]*width:\s*clamp\(13rem,[^}]*height:\s*clamp\(13rem/s, "card de primeiro jogo não recebe destaque no estado vazio");
 assert.doesNotMatch(ui, /LeafGreen|leafgreen|pokemon-leafgreen-version_p5c2/, "LeafGreen ainda aparece na HOME");
