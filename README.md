@@ -92,9 +92,9 @@ Abrir `index.html` diretamente por `file://` não permite que o navegador leia a
 | L / R | A / S |
 | Start | Enter |
 | Select | Shift esquerdo |
-| Menu rápido | Esc |
+| Menu rápido | Shift esquerdo (Select) ou Esc |
 
-Na interface, use o direcional ou analógico para navegar, **A** para confirmar, **B** para voltar e **L/R** para trocar abas. Durante o jogo, **Start** abre o menu rápido. Todos os botões podem ser alterados em **Configurações → Controles**.
+Na interface, use o direcional ou analógico para navegar, **A** para confirmar, **B** para voltar e **L/R** para trocar abas. Durante o jogo, **Select** abre o menu rápido e **Start** permanece dedicado ao jogo. Todos os botões podem ser alterados em **Configurações → Controles**.
 
 ## Arquitetura
 

@@ -298,7 +298,7 @@ async function main() {
 
     const gamepadInputs = [
       { control: "A", button: 1, bit: 0 }, { control: "B", button: 0, bit: 1 },
-      { control: "SELECT", button: 8, bit: 2 }, { control: "RIGHT", button: 15, bit: 4 },
+      { control: "START", button: 9, bit: 3 }, { control: "RIGHT", button: 15, bit: 4 },
       { control: "LEFT", button: 14, bit: 5 }, { control: "UP", button: 12, bit: 6 },
       { control: "DOWN", button: 13, bit: 7 }, { control: "R", button: 5, bit: 8 },
       { control: "L", button: 4, bit: 9 }
@@ -321,10 +321,10 @@ async function main() {
       );
     }
 
-    await evaluate(cdp, "window.__stateRestoreGamepad.buttons[9].pressed = true; window.__stateRestoreGamepad.buttons[9].value = 1; true");
+    await evaluate(cdp, "window.__stateRestoreGamepad.buttons[8].pressed = true; window.__stateRestoreGamepad.buttons[8].value = 1; true");
     await delay(120);
-    assert.equal(await evaluate(cdp, "document.querySelector('#quickMenu').classList.contains('view--active')"), true, "Start do controle não abriu o menu rápido");
-    await evaluate(cdp, "window.__stateRestoreGamepad.buttons[9].pressed = false; window.__stateRestoreGamepad.buttons[9].value = 0; true");
+    assert.equal(await evaluate(cdp, "document.querySelector('#quickMenu').classList.contains('view--active')"), true, "Select do controle não abriu o menu rápido");
+    await evaluate(cdp, "window.__stateRestoreGamepad.buttons[8].pressed = false; window.__stateRestoreGamepad.buttons[8].value = 0; true");
     await delay(90);
     await evaluate(cdp, "window.__stateRestoreGamepad.buttons[0].pressed = true; window.__stateRestoreGamepad.buttons[0].value = 1; true");
     await delay(90);

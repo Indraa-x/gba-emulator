@@ -878,6 +878,15 @@
     if (isTypingTarget(event.target) || refs.settingsDialog.open) return;
     const control = controlForCode(event.code);
     if (!control) return;
+    if (control === "SELECT" && emulator.romLoaded) {
+      event.preventDefault();
+      if (!gamepadNavigationMode() && !event.repeat) {
+        emulator.releaseAllKeys();
+        playUISound("open");
+        toggleQuickMenu(true);
+      }
+      return;
+    }
     event.preventDefault();
     if (!event.repeat) pressControl(control, "keyboard");
   }
@@ -994,7 +1003,7 @@
     }
     previousGamepadControls = activeControls;
     previousRawGamepadInputs = GAMEPAD_BINDINGS.snapshot(gamepad);
-    previousMenuButton = Boolean(activeControls.get("START"));
+    previousMenuButton = Boolean(activeControls.get("SELECT"));
   }
 
   function gamepadNavigationMode() {
@@ -1200,7 +1209,7 @@
       }
 
       let navigationMode = gamepadNavigationMode();
-      const menuButton = Boolean(activeControls.get("START"));
+      const menuButton = Boolean(activeControls.get("SELECT"));
       if (!gamepadInputSuspended && !navigationMode && emulator.romLoaded && menuButton && !previousMenuButton) {
         emulator.releaseAllKeys();
         playUISound("open");

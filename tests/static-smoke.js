@@ -35,9 +35,10 @@ assert.match(html, /class="system-dock"/, "barra inferior de funções não foi 
 assert.match(html, /class="system-dock"[\s\S]*class="selected-software-copy"/, "o nome selecionado deve aparecer abaixo da barra como no Switch 2");
 assert.match(css, /\.home-view\s*{[^}]*grid-template-rows/s, "menu HOME não possui layout de tela inteira");
 assert.match(css, /#screen\s*{[^}]*width:\s*min\(100vw,\s*150vh\)[^}]*height:\s*min\(100vh,\s*66\.6667vw\)/s, "jogo não ocupa a tela mantendo 3:2");
-assert.match(html, /Start abre este menu/, "atalho de Start para o menu não está documentado na interface");
-assert.match(ui, /const menuButton = Boolean\(activeControls\.get\("START"\)\)/, "Start sozinho não abre o menu durante o jogo");
-assert.doesNotMatch(ui, /activeControls\.get\("SELECT"\)\s*&&\s*activeControls\.get\("START"\)/, "a combinação antiga Select + Start ainda está ativa");
+assert.match(html, /Select abre este menu/, "atalho de Select para o menu não está documentado na interface");
+assert.match(ui, /const menuButton = Boolean\(activeControls\.get\("SELECT"\)\)/, "Select sozinho não abre o menu durante o jogo");
+assert.doesNotMatch(ui, /const menuButton = Boolean\(activeControls\.get\("START"\)\)/, "Start ainda abre o menu durante o jogo");
+assert.match(ui, /control === "SELECT" && emulator\.romLoaded[\s\S]*?toggleQuickMenu\(true\)/, "a tecla mapeada como Select não abre o menu durante o jogo");
 assert.match(css, /html,\s*body\s*{[^}]*overflow:\s*hidden/s, "a barra externa da página não foi removida");
 assert.doesNotMatch(html, /class="shell"|class="screen-zone"|class="controls-zone"/, "a carcaça antiga ainda está na interface");
 assert.doesNotMatch(ui, /LOCAL_GAMES|loadLocalGame|requestLocalROM|pendingLocalGame|IS_GITHUB_PAGES/, "a HOME ainda possui jogos ou atalhos fixos");
@@ -115,7 +116,7 @@ assert.match(css, /\.selected-software-copy p\s*{[^}]*text-overflow:\s*ellipsis[
 assert.match(ui, /function revealNavigationTarget\(element\)[\s\S]*?strip\.scrollLeft = Math\.max[\s\S]*?document\.scrollingElement/, "navegação entre jogos ainda pode deslocar a página inteira");
 assert.match(ui, /function pollGamepads\(\)\s*{\s*[\s\S]*?requestAnimationFrame\(pollGamepads\);\s*try\s*{/, "uma falha de interface ainda pode desligar o polling do controle");
 assert.match(html, /style\.css\?v=6/, "a folha visual atual não possui invalidação do cache público");
-assert.match(html, /js\/ui\.js\?v=9/, "a versão atual da interface não possui invalidação do cache público");
+assert.match(html, /js\/ui\.js\?v=10/, "a versão atual da interface não possui invalidação do cache público");
 assert.match(html, /id="screenshotBtn"[^>]*hidden/, "ícone da câmera ainda aparece na barra principal");
 for (const selector of ["controls", "saves", "audio"]) {
   assert.match(css, new RegExp(`\\.system-button\\[data-open-settings="${selector}"\\]\\s*\\{\\s*--icon-color:`), `ícone sem cor própria: ${selector}`);
@@ -164,7 +165,7 @@ assert.doesNotMatch(html, /quick-speed-chip|quickBrightnessRange|quickBrightness
 assert.doesNotMatch(ui, /quickBrightnessRange|quickBrightnessValue/, "a interface ainda referencia o brilho removido do menu rapido");
 
 assert.match(adapter, /restoreState\(state\)[\s\S]*?releaseAllKeys\(\);[\s\S]*?core\.defrost\(state\.frost\);[\s\S]*?releaseAllKeys\(\);/, "carregar estado nao limpa os botoes presos no nucleo");
-assert.match(ui, /function resetInputStateAfterRestore\(\)[\s\S]*?previousGamepadControls = activeControls;[\s\S]*?previousMenuButton = Boolean\(activeControls\.get\("START"\)\);/, "controle nao e ressincronizado depois de carregar um estado");
+assert.match(ui, /function resetInputStateAfterRestore\(\)[\s\S]*?previousGamepadControls = activeControls;[\s\S]*?previousMenuButton = Boolean\(activeControls\.get\("SELECT"\)\);/, "controle nao e ressincronizado depois de carregar um estado");
 assert.match(ui, /async function loadSlot\(slot\)[\s\S]*?quickMenuOpen = false;[\s\S]*?resetInputStateAfterRestore\(\);[\s\S]*?emulator\.start\(\);/, "carregar estado pelo menu nao devolve o controle ao jogo");
 
 const htmlIds = [...html.matchAll(/\sid="([^"]+)"/g)].map((match) => match[1]);
