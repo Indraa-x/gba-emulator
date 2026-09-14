@@ -30,6 +30,56 @@
     Object.freeze({ codePrefix: "AA2", names: ["super mario advance 2", "super mario world"], src: "capas/MV5BMDY1ZmVkMmQtOWY0Ni00NjZlLTg5NjktYjZhY2YzNTZmYjljXkEyXkFqcGc@._V1_.jpg" })
   ]);
   const THEMES = new Set(["indigo", "coral"]);
+  const UI_SOUND_PROFILES = Object.freeze({
+    move: Object.freeze({
+      cooldown: 38,
+      cutoff: 3200,
+      voices: Object.freeze([
+        Object.freeze({ delay: 0, from: 720, to: 825, duration: .048, gain: .03, type: "sine" })
+      ])
+    }),
+    toggle: Object.freeze({
+      cooldown: 55,
+      cutoff: 3600,
+      voices: Object.freeze([
+        Object.freeze({ delay: 0, from: 650, to: 710, duration: .072, gain: .028, type: "sine" }),
+        Object.freeze({ delay: .014, from: 980, to: 1060, duration: .066, gain: .012, type: "triangle" })
+      ])
+    }),
+    confirm: Object.freeze({
+      cooldown: 48,
+      cutoff: 3800,
+      voices: Object.freeze([
+        Object.freeze({ delay: 0, from: 610, to: 665, duration: .105, gain: .031, type: "sine" }),
+        Object.freeze({ delay: .032, from: 915, to: 995, duration: .112, gain: .015, type: "triangle" })
+      ])
+    }),
+    back: Object.freeze({
+      cooldown: 65,
+      cutoff: 3000,
+      voices: Object.freeze([
+        Object.freeze({ delay: 0, from: 540, to: 385, duration: .11, gain: .03, type: "sine" }),
+        Object.freeze({ delay: .012, from: 810, to: 575, duration: .085, gain: .009, type: "triangle" })
+      ])
+    }),
+    open: Object.freeze({
+      cooldown: 75,
+      cutoff: 3700,
+      voices: Object.freeze([
+        Object.freeze({ delay: 0, from: 455, to: 515, duration: .115, gain: .027, type: "sine" }),
+        Object.freeze({ delay: .045, from: 680, to: 770, duration: .135, gain: .017, type: "triangle" })
+      ])
+    }),
+    launch: Object.freeze({
+      cooldown: 180,
+      cutoff: 4000,
+      voices: Object.freeze([
+        Object.freeze({ delay: 0, from: 494, to: 523, duration: .14, gain: .027, type: "sine" }),
+        Object.freeze({ delay: .058, from: 659, to: 698, duration: .16, gain: .022, type: "sine" }),
+        Object.freeze({ delay: .118, from: 784, to: 880, duration: .19, gain: .018, type: "triangle" })
+      ])
+    })
+  });
 
   const PROFILE_AVATARS = Object.freeze([
     Object.freeze({ id: "verdant-drake", name: "Broto esmeralda", src: "assets/avatars/verdant-drake.png?v=2" }),
@@ -84,6 +134,8 @@
   let lastRomFile = null;
   let linkChannel = null;
   let uiAudioContext = null;
+  let uiAudioBus = null;
+  const uiSoundPlayedAt = new Map();
   const pointerOwners = new Map();
 
   function byId(id) {
@@ -294,35 +346,78 @@
     }).format(new Date());
   }
 
+  function getUISoundBus() {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return null;
+    if (!uiAudioContext) {
+      try {
+        uiAudioContext = new AudioContextClass({ latencyHint: "interactive" });
+      } catch (_) {
+        uiAudioContext = new AudioContextClass();
+      }
+    }
+    if (uiAudioBus) return uiAudioBus;
+
+    const input = uiAudioContext.createGain();
+    const warmth = uiAudioContext.createBiquadFilter();
+    const compressor = uiAudioContext.createDynamicsCompressor();
+    input.gain.value = .72;
+    warmth.type = "lowpass";
+    warmth.frequency.value = 4200;
+    warmth.Q.value = .55;
+    compressor.threshold.value = -30;
+    compressor.knee.value = 18;
+    compressor.ratio.value = 3;
+    compressor.attack.value = .004;
+    compressor.release.value = .16;
+    input.connect(warmth);
+    warmth.connect(compressor);
+    compressor.connect(uiAudioContext.destination);
+    uiAudioBus = Object.freeze({ input, warmth });
+    return uiAudioBus;
+  }
+
+  function scheduleUISoundVoice(context, output, start, profile, voice) {
+    const oscillator = context.createOscillator();
+    const tone = context.createBiquadFilter();
+    const envelope = context.createGain();
+    const voiceStart = start + voice.delay;
+    const voiceEnd = voiceStart + voice.duration;
+    const attackEnd = voiceStart + Math.min(.008, voice.duration * .22);
+    const bodyEnd = voiceStart + voice.duration * .52;
+
+    oscillator.type = voice.type;
+    oscillator.frequency.setValueAtTime(voice.from, voiceStart);
+    oscillator.frequency.exponentialRampToValueAtTime(voice.to, voiceEnd);
+    tone.type = "lowpass";
+    tone.frequency.setValueAtTime(profile.cutoff, voiceStart);
+    tone.Q.value = .45;
+    envelope.gain.setValueAtTime(.0001, voiceStart);
+    envelope.gain.exponentialRampToValueAtTime(voice.gain, attackEnd);
+    envelope.gain.exponentialRampToValueAtTime(Math.max(.0002, voice.gain * .42), bodyEnd);
+    envelope.gain.exponentialRampToValueAtTime(.0001, voiceEnd);
+    oscillator.connect(tone);
+    tone.connect(envelope);
+    envelope.connect(output);
+    oscillator.start(voiceStart);
+    oscillator.stop(voiceEnd + .018);
+  }
+
   function playUISound(kind = "confirm") {
     if (!preferences?.uiSounds) return;
-    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-    if (!AudioContextClass) return;
+    const profile = UI_SOUND_PROFILES[kind] || UI_SOUND_PROFILES.confirm;
+    const now = performance.now();
+    const lastPlayed = uiSoundPlayedAt.get(kind) || 0;
+    if (now - lastPlayed < profile.cooldown) return;
+    uiSoundPlayedAt.set(kind, now);
     try {
-      if (!uiAudioContext) uiAudioContext = new AudioContextClass();
+      const bus = getUISoundBus();
+      if (!bus) return;
       if (uiAudioContext.state === "suspended") uiAudioContext.resume().catch(() => {});
-      const patterns = {
-        move: [[0, 620, 760, .045, .015, "sine"]],
-        confirm: [[0, 780, 920, .065, .022, "sine"], [.045, 1040, 1180, .07, .016, "triangle"]],
-        back: [[0, 520, 350, .09, .02, "sine"]],
-        open: [[0, 560, 700, .08, .018, "sine"], [.055, 840, 980, .09, .014, "triangle"]],
-        launch: [[0, 523, 590, .08, .022, "sine"], [.06, 659, 740, .09, .02, "sine"], [.13, 784, 940, .12, .018, "triangle"]]
-      };
-      const start = uiAudioContext.currentTime + .004;
-      for (const [delay, from, to, duration, volume, type] of patterns[kind] || patterns.confirm) {
-        const oscillator = uiAudioContext.createOscillator();
-        const gain = uiAudioContext.createGain();
-        oscillator.type = type;
-        oscillator.frequency.setValueAtTime(from, start + delay);
-        oscillator.frequency.exponentialRampToValueAtTime(to, start + delay + duration);
-        gain.gain.setValueAtTime(.0001, start + delay);
-        gain.gain.exponentialRampToValueAtTime(volume, start + delay + .008);
-        gain.gain.exponentialRampToValueAtTime(.0001, start + delay + duration);
-        oscillator.connect(gain);
-        gain.connect(uiAudioContext.destination);
-        oscillator.start(start + delay);
-        oscillator.stop(start + delay + duration + .015);
-      }
+      bus.warmth.frequency.cancelScheduledValues(uiAudioContext.currentTime);
+      bus.warmth.frequency.setTargetAtTime(profile.cutoff + 650, uiAudioContext.currentTime, .018);
+      const start = uiAudioContext.currentTime + .006;
+      for (const voice of profile.voices) scheduleUISoundVoice(uiAudioContext, bus.input, start, profile, voice);
     } catch (_) {
       // A interface continua funcionando se o navegador bloquear áudio antes da primeira interação.
     }
@@ -330,8 +425,10 @@
 
   function soundForTarget(element) {
     if (element?.matches(".software-card, .recent-game")) return "launch";
-    if (element?.matches(".close-button")) return "back";
+    if (element?.matches(".close-button, [data-quick='home']")) return "back";
     if (element?.matches("#settingsBtn, [data-open-settings], #profileAvatarButton, #profileDockButton")) return "open";
+    if (element?.matches(".settings-tab")) return "move";
+    if (element?.matches("select, input[type='checkbox']")) return "toggle";
     return "confirm";
   }
 
@@ -1517,9 +1614,11 @@
     });
     refs.volumeRange.addEventListener("change", savePreferences);
     refs.uiSoundToggle.addEventListener("change", () => {
+      const wasEnabled = preferences.uiSounds;
       preferences.uiSounds = refs.uiSoundToggle.checked;
       syncQuickSettings();
       savePreferences();
+      if (!wasEnabled && preferences.uiSounds) playUISound("toggle");
     });
     refs.quickVolumeRange.addEventListener("input", () => {
       refs.volumeRange.value = refs.quickVolumeRange.value;
@@ -1548,7 +1647,7 @@
       clearGamepadFocus();
     }, true);
     document.addEventListener("pointerdown", (event) => {
-      const target = event.target.closest?.("button, a[href]");
+      const target = event.target.closest?.("button, a[href], select, input[type='checkbox']");
       if (target) playUISound(soundForTarget(target));
     }, true);
     document.querySelectorAll("[data-system-info]").forEach((button) => {

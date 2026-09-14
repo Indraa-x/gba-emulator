@@ -90,6 +90,10 @@ for (const id of avatarIds) {
 }
 assert.match(ui, /function playUISound\(kind = "confirm"\)/, "efeitos sonoros da interface não foram encontrados");
 assert.match(ui, /window\.AudioContext \|\| window\.webkitAudioContext/, "efeitos sonoros não usam a Web Audio API nativa");
+assert.match(ui, /const UI_SOUND_PROFILES = Object\.freeze\([\s\S]*?move:[\s\S]*?toggle:[\s\S]*?confirm:[\s\S]*?back:[\s\S]*?open:[\s\S]*?launch:/, "assinatura sonora completa da interface não foi encontrada");
+assert.match(ui, /createBiquadFilter\(\)[\s\S]*?createDynamicsCompressor\(\)/, "efeitos da interface não possuem suavização e controle de dinâmica");
+assert.match(ui, /uiSoundPlayedAt\.get\(kind\)[\s\S]*?profile\.cooldown/, "repetição rápida do menu ainda pode embolar o áudio");
+assert.match(ui, /function scheduleUISoundVoice\([\s\S]*?exponentialRampToValueAtTime\(\.0001, voiceEnd\)/, "envelope suave dos efeitos da interface não foi instalado");
 assert.match(css, /\.software-strip\s*{[^}]*overflow-x:\s*auto[^}]*scrollbar-width:\s*none/s, "carrossel não rola horizontalmente sem exibir barra");
 assert.match(css, /\.settings-layout\s*{[^}]*grid-template-rows:\s*auto minmax\(0, 1fr\)/s, "configurações ainda não usam o layout clean horizontal");
 assert.doesNotMatch(css, /\.settings-layout\s*{[^}]*grid-template-columns:\s*13rem/s, "a sidebar quadrada antiga ainda está ativa");
@@ -106,7 +110,7 @@ assert.match(css, /\.selected-software-copy\s*{[^}]*width:\s*min\(68vw,\s*58rem\
 assert.match(css, /\.selected-software-copy p\s*{[^}]*text-overflow:\s*ellipsis[^}]*white-space:\s*nowrap/s, "título longo pode vazar da HOME");
 assert.match(ui, /function revealNavigationTarget\(element\)[\s\S]*?strip\.scrollLeft = Math\.max[\s\S]*?document\.scrollingElement/, "navegação entre jogos ainda pode deslocar a página inteira");
 assert.match(ui, /function pollGamepads\(\)\s*{\s*[\s\S]*?requestAnimationFrame\(pollGamepads\);\s*try\s*{/, "uma falha de interface ainda pode desligar o polling do controle");
-assert.match(html, /js\/ui\.js\?v=4/, "a versão atual da interface não possui invalidação do cache público");
+assert.match(html, /js\/ui\.js\?v=5/, "a versão atual da interface não possui invalidação do cache público");
 assert.match(html, /id="screenshotBtn"[^>]*hidden/, "ícone da câmera ainda aparece na barra principal");
 for (const selector of ["controls", "saves", "audio"]) {
   assert.match(css, new RegExp(`\\.system-button\\[data-open-settings="${selector}"\\]\\s*\\{\\s*--icon-color:`), `ícone sem cor própria: ${selector}`);
