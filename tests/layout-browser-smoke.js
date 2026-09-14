@@ -150,6 +150,47 @@ function assertHomeLayout(layout, label) {
   assert.equal(layout.footerChildrenInside, true, `${label}: dicas inferiores foram cortadas (${layout.footerBounds.left.toFixed(1)}–${layout.footerBounds.right.toFixed(1)}; rodapé ${layout.footer.left.toFixed(1)}–${layout.footer.right.toFixed(1)})`);
 }
 
+async function testLongSelectedTitle(cdp) {
+  await cdp.call("Emulation.setDeviceMetricsOverride", { width: 1072, height: 720, deviceScaleFactor: 1, mobile: false });
+  await evaluate(cdp, `(() => {
+    const first = document.querySelector('.software-card--pokemon');
+    first.focus({ preventScroll: true });
+    for (let index = 0; index < 3; index++) {
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', code: 'ArrowRight', bubbles: true }));
+    }
+    return true;
+  })()`);
+  await delay(450);
+  const state = await evaluate(cdp, `(() => {
+    const rect = (element) => {
+      const value = element.getBoundingClientRect();
+      return { left: value.left, right: value.right, top: value.top, bottom: value.bottom };
+    };
+    const copy = document.querySelector('.selected-software-copy');
+    const title = document.querySelector('#selectedGameTitle');
+    const selected = document.querySelector('.software-card.is-selected');
+    return {
+      viewportWidth: innerWidth,
+      scrollX,
+      scrollY,
+      copy: rect(copy),
+      title: rect(title),
+      text: title.textContent,
+      selectedCode: selected?.dataset.gameCode || ''
+    };
+  })()`);
+  assert.equal(state.selectedCode, "AA2E", "navegação não alcançou a capa do Mario");
+  assert.equal(state.text, "Super Mario Advance 2: Super Mario World", "título longo selecionado incorreto");
+  assert.equal(state.scrollX, 0, "navegar pelas capas deslocou a página horizontalmente");
+  assert.equal(state.scrollY, 0, "navegar pelas capas deslocou a página verticalmente");
+  assert.ok(state.copy.left >= 0 && state.copy.right <= state.viewportWidth, "contêiner do título longo saiu da tela");
+  assert.ok(state.title.left >= state.copy.left && state.title.right <= state.copy.right + 1, "título longo vazou do contêiner");
+  await capture(cdp, "home-mario-title-desktop.png");
+  await cdp.call("Emulation.setDeviceMetricsOverride", { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
+  await evaluate(cdp, `document.querySelector('.software-card--pokemon').focus({ preventScroll: true }); true`);
+  await delay(100);
+}
+
 async function capture(cdp, filename) {
   const screenshot = await cdp.call("Page.captureScreenshot", { format: "png", fromSurface: true, captureBeyondViewport: false });
   fs.writeFileSync(path.join(__dirname, filename), Buffer.from(screenshot.data, "base64"));
@@ -699,6 +740,7 @@ async function main() {
     const desktop = await inspectHome(cdp);
     assertHomeLayout(desktop, "desktop");
     await capture(cdp, "home-layout-desktop.png");
+    await testLongSelectedTitle(cdp);
     await testCustomCovers(cdp);
     await testAvatarPicker(cdp);
     await testFullscreenEdges(cdp);

@@ -93,6 +93,9 @@ assert.match(css, /\.settings-panels\s*{[^}]*scrollbar-width:\s*none/s, "barra v
 assert.match(css, /\.quick-panel\s*{[^}]*border-radius:\s*2rem/s, "menu rápido não acompanha os cantos arredondados da HOME");
 assert.match(css, /\.system-dock\s*{[^}]*width:\s*min\(68vw,\s*58rem\)[^}]*border-radius:\s*999px/s, "barra principal não segue as proporções do Switch 2");
 assert.match(css, /\.system-dock\s*{[^}]*background:\s*var\(--home-bg\)/s, "barra principal não usa a mesma cor do fundo da interface");
+assert.match(css, /\.selected-software-copy\s*{[^}]*width:\s*min\(68vw,\s*58rem\)[^}]*margin:[^;]*auto[^}]*overflow:\s*hidden/s, "nome do jogo não está alinhado e contido sob a barra principal");
+assert.match(css, /\.selected-software-copy p\s*{[^}]*text-overflow:\s*ellipsis[^}]*white-space:\s*nowrap/s, "título longo pode vazar da HOME");
+assert.match(ui, /function revealNavigationTarget\(element\)[\s\S]*?strip\.scrollBy[\s\S]*?window\.scrollTo\(0, 0\)/, "navegação entre jogos ainda pode deslocar a página inteira");
 assert.match(html, /id="screenshotBtn"[^>]*hidden/, "ícone da câmera ainda aparece na barra principal");
 for (const selector of ["controls", "saves", "audio"]) {
   assert.match(css, new RegExp(`\\.system-button\\[data-open-settings="${selector}"\\]\\s*\\{\\s*--icon-color:`), `ícone sem cor própria: ${selector}`);

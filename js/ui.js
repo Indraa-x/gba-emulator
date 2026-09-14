@@ -914,6 +914,23 @@
     document.querySelectorAll(".gamepad-focus").forEach((element) => element.classList.remove("gamepad-focus"));
   }
 
+  function revealNavigationTarget(element) {
+    const strip = element.closest(".software-strip");
+    if (!strip) {
+      element.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "smooth" });
+      return;
+    }
+    const target = element.getBoundingClientRect();
+    const viewport = strip.getBoundingClientRect();
+    const style = window.getComputedStyle(element);
+    const focusSpace = (parseFloat(style.outlineWidth) || 0) + (parseFloat(style.outlineOffset) || 0) + 2;
+    let distance = 0;
+    if (target.left < viewport.left + focusSpace) distance = target.left - viewport.left - focusSpace;
+    else if (target.right > viewport.right - focusSpace) distance = target.right - viewport.right + focusSpace;
+    if (distance) strip.scrollBy({ left: distance, behavior: "smooth" });
+    window.scrollTo(0, 0);
+  }
+
   function focusGamepadTarget(element) {
     if (!element) return;
     const changed = document.activeElement !== element;
@@ -921,7 +938,7 @@
     element.classList.add("gamepad-focus");
     selectSoftwareCard(element);
     element.focus({ preventScroll: true });
-    element.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "smooth" });
+    revealNavigationTarget(element);
     if (changed) playUISound("move");
   }
 
