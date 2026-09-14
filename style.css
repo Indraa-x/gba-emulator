@@ -390,8 +390,8 @@ button:disabled {
   display: none;
 }
 
-.software-card__label,
-.recent-game span {
+.software-card > .software-card__label,
+.recent-game > .software-card__label {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -401,6 +401,42 @@ button:disabled {
   clip: rect(0 0 0 0);
   white-space: nowrap;
   border: 0;
+}
+
+.game-cover--fallback {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  padding: 1.35rem;
+  place-items: center;
+  align-content: center;
+  gap: 1rem;
+  color: var(--cyan);
+  background:
+    radial-gradient(circle at 50% 38%, rgba(114, 232, 243, .12), transparent 42%),
+    linear-gradient(145deg, var(--home-panel-hi), var(--home-panel));
+}
+
+.game-cover--fallback svg {
+  width: min(44%, 5.5rem);
+  overflow: visible;
+  fill: rgba(185, 173, 255, .08);
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.8;
+  filter: drop-shadow(0 .45rem .8rem rgba(0, 0, 0, .28));
+}
+
+.game-cover--fallback span {
+  width: 100%;
+  overflow: hidden;
+  color: var(--ink);
+  font-size: clamp(.72rem, 1.25vw, .9rem);
+  font-weight: 650;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .software-card--add {

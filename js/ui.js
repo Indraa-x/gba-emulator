@@ -502,22 +502,16 @@
       image.className = "game-cover";
       return image;
     }
-    const canvas = document.createElement("canvas");
-    canvas.width = 72;
-    canvas.height = 48;
-    const context = canvas.getContext("2d");
-    const hue = parseInt(game.id.slice(0, 3), 16) % 360;
-    context.fillStyle = `hsl(${hue} 35% 16%)`;
-    context.fillRect(0, 0, 72, 48);
-    context.strokeStyle = `hsl(${hue} 70% 62%)`;
-    context.lineWidth = 2;
-    context.strokeRect(7, 7, 58, 34);
-    context.fillStyle = `hsl(${hue} 75% 68%)`;
-    context.font = "bold 17px sans-serif";
-    context.textAlign = "center";
-    context.textBaseline = "middle";
-    context.fillText((game.title || "?").charAt(0), 36, 25);
-    return canvas;
+    const fallback = document.createElement("span");
+    fallback.className = "game-cover game-cover--fallback";
+    fallback.setAttribute("aria-hidden", "true");
+    const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    icon.setAttribute("viewBox", "0 0 64 64");
+    icon.innerHTML = '<path d="M15 8h34a5 5 0 0 1 5 5v38a5 5 0 0 1-5 5H15a5 5 0 0 1-5-5V13a5 5 0 0 1 5-5Z"/><path d="M18 17h28M20 26h24v18H20zM25 35h14"/>';
+    const label = document.createElement("span");
+    label.textContent = game.filename?.replace(/\.gba$/i, "") || game.title || "Jogo GBA";
+    fallback.append(icon, label);
+    return fallback;
   }
 
   async function renderRecentGames() {

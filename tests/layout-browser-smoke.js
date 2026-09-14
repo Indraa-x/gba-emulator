@@ -76,6 +76,24 @@ async function waitForHome(cdp) {
   throw new Error("a HOME não terminou de renderizar");
 }
 
+async function reloadAndWaitForHome(cdp) {
+  const previousDocument = await evaluate(cdp, `window.__layoutDocumentId || ''`);
+  await cdp.call("Page.reload");
+  for (let attempt = 0; attempt < 80; attempt++) {
+    try {
+      const state = await evaluate(cdp, `(() => ({
+        id: window.__layoutDocumentId || '',
+        ready: document.readyState === 'complete' && Boolean(document.querySelector('.software-card--pokemon img')?.naturalWidth) && !document.querySelector('.boot-screen')
+      }))()`);
+      if (state.id && state.id !== previousDocument && state.ready) return;
+    } catch (_) {
+      // A navegação pode trocar o contexto entre duas consultas do protocolo.
+    }
+    await delay(100);
+  }
+  throw new Error("a HOME recarregada não terminou de renderizar");
+}
+
 async function inspectHome(cdp) {
   return evaluate(cdp, `(() => {
     const rect = (element) => {
@@ -272,9 +290,37 @@ async function testCustomCovers(cdp) {
   await capture(cdp, "home-covers-desktop.png");
 }
 
+async function testFallbackCover(cdp) {
+  await evaluate(cdp, `(async () => {
+    await window.advanceLab.database.put('games', {
+      id: 'fallback-cover-smoke', code: 'TEST', title: 'Cartucho sem arte',
+      filename: 'Cartucho sem arte.gba', loadedAt: Date.now(), thumbnail: null, rom: null
+    });
+    return true;
+  })()`);
+  await reloadAndWaitForHome(cdp);
+  const fallback = await evaluate(cdp, `(() => {
+    const card = document.querySelector('[data-game-id="fallback-cover-smoke"]');
+    const cover = card?.querySelector('.game-cover--fallback');
+    return {
+      exists: Boolean(cover),
+      hasCanvas: Boolean(card?.querySelector('canvas')),
+      title: cover?.querySelector('span')?.textContent || '',
+      icon: Boolean(cover?.querySelector('svg')),
+      background: cover ? getComputedStyle(cover).backgroundImage : ''
+    };
+  })()`);
+  assert.equal(fallback.exists && fallback.icon, true, "fallback de capa não foi renderizado");
+  assert.equal(fallback.hasCanvas, false, "fallback ainda usa canvas");
+  assert.equal(fallback.title, "Cartucho sem arte", "fallback não mostra o título do jogo");
+  assert.match(fallback.background, /gradient/i, "fallback não acompanha os painéis da interface");
+  await capture(cdp, "home-fallback-cover-desktop.png");
+  await evaluate(cdp, `window.advanceLab.database.delete('games', 'fallback-cover-smoke')`);
+  await reloadAndWaitForHome(cdp);
+}
+
   async function testLocalCoverLaunches(cdp) {
-    await cdp.call("Page.reload");
-    await waitForHome(cdp);
+    await reloadAndWaitForHome(cdp);
     const expectedCovers = ["BPEE", "BPRE", "BZMP", "AA2E"];
     const expectedSpeeds = { BPEE: 2, BPRE: 2, BZMP: 1, AA2E: 1 };
     for (const expectedCode of ["BPEE", "BPRE", "BZMP", "AA2E"]) {
@@ -308,8 +354,7 @@ async function testCustomCovers(cdp) {
         assert.equal(launchedState.playbackRate, expectedSpeeds[expectedCode], `${expectedCode}: áudio não acompanha a velocidade fixa`);
         assert.equal(launchedState.preservePitch, expectedSpeeds[expectedCode] > 1, `${expectedCode}: modo de áudio incorreto`);
         await evaluate(cdp, `window.advanceLab.pause(); true`);
-      await cdp.call("Page.reload");
-      await waitForHome(cdp);
+      await reloadAndWaitForHome(cdp);
     }
   }
 }
@@ -327,8 +372,7 @@ async function testHiddenFifa(cdp) {
     });
     return true;
   })()`);
-  await cdp.call("Page.reload");
-  await waitForHome(cdp);
+  await reloadAndWaitForHome(cdp);
   const visible = await evaluate(cdp, `Boolean(document.querySelector('.recent-game[data-game-id="hidden-fifa-2006"]'))`);
   assert.equal(visible, false, "FIFA 2006 ainda aparece na HOME");
 }
@@ -477,8 +521,7 @@ async function testDeleteMode(cdp) {
     });
     return true;
   })()`);
-  await cdp.call("Page.reload");
-  await waitForHome(cdp);
+  await reloadAndWaitForHome(cdp);
 
   for (let attempt = 0; attempt < 40; attempt++) {
     const libraryReady = await evaluate(cdp, `Boolean(document.querySelector('.recent-game[data-game-id="${gameId}"]'))`);
@@ -629,8 +672,7 @@ async function testDeleteMode(cdp) {
     delete window.__deleteTestGamepad;
     return true;
   })()`);
-  await cdp.call("Page.reload");
-  await waitForHome(cdp);
+  await reloadAndWaitForHome(cdp);
 }
 
 async function testAvatarPicker(cdp) {
@@ -696,8 +738,7 @@ async function testAvatarPicker(cdp) {
   await evaluate(cdp, "document.querySelector('#profileDialog').close(); true");
   await delay(100);
   await capture(cdp, "home-profile-desktop.png");
-  await cdp.call("Page.reload");
-  await waitForHome(cdp);
+  await reloadAndWaitForHome(cdp);
   const persisted = await evaluate(cdp, `(() => ({
     avatar: JSON.parse(localStorage.getItem('advance-lab:preferences') || '{}').profileAvatar,
     source: document.querySelector('#profileAvatarImage').getAttribute('src')
@@ -771,6 +812,7 @@ async function main() {
     await cdp.call("Page.enable");
     await cdp.call("Page.addScriptToEvaluateOnNewDocument", {
       source: `(() => {
+        window.__layoutDocumentId = Date.now().toString(36) + Math.random().toString(36);
         const state = { connected: false };
         const buttons = Array.from({ length: 16 }, () => ({ pressed: false, touched: false, value: 0 }));
         const gamepad = { index: 0, id: 'Generic Bluetooth regression pad', mapping: 'standard', connected: false, timestamp: 0, buttons, axes: [0, 0, 0, 0] };
@@ -802,6 +844,7 @@ async function main() {
     await testLongSelectedTitle(cdp);
     await testGamepadRecovery(cdp);
     await testCustomCovers(cdp);
+    await testFallbackCover(cdp);
     await testAvatarPicker(cdp);
     await testFullscreenEdges(cdp);
 
