@@ -832,6 +832,44 @@ function assertSettingsLayout(settings, label, expectedPanel) {
   assert.notEqual(settings.panelShadow, "none", `${label}: área rolável perdeu o divisor visual`);
 }
 
+async function testThemePicker(cdp) {
+  await evaluate(cdp, `(() => {
+    document.querySelector('#tabVideo').click();
+    const select = document.querySelector('#themeSelect');
+    select.value = 'coral';
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+    return true;
+  })()`);
+  await delay(100);
+  const state = await evaluate(cdp, `(() => {
+    const rootStyle = getComputedStyle(document.documentElement);
+    const toRgb = (hex) => [1, 3, 5].map((start) => parseInt(hex.slice(start, start + 2), 16) / 255);
+    const luminance = (hex) => toRgb(hex).map((value) => value <= .03928 ? value / 12.92 : ((value + .055) / 1.055) ** 2.4)
+      .reduce((sum, value, index) => sum + value * [.2126, .7152, .0722][index], 0);
+    const foreground = rootStyle.getPropertyValue('--cyan').trim();
+    const low = Math.min(luminance(foreground), luminance('#202126'));
+    const high = Math.max(luminance(foreground), luminance('#202126'));
+    return {
+      theme: document.documentElement.dataset.theme,
+      selected: document.querySelector('#themeSelect').value,
+      stored: JSON.parse(localStorage.getItem('advance-lab:preferences') || '{}').theme,
+      accent: foreground,
+      contrast: (high + .05) / (low + .05)
+    };
+  })()`);
+  assert.deepEqual({ theme: state.theme, selected: state.selected, stored: state.stored, accent: state.accent }, {
+    theme: "coral", selected: "coral", stored: "coral", accent: "#ff9fcf"
+  }, "tema Coral não foi aplicado e persistido");
+  assert.ok(state.contrast >= 4.5, `tema Coral perdeu contraste AA (${state.contrast.toFixed(2)})`);
+  await capture(cdp, "settings-theme-coral-desktop.png");
+  await evaluate(cdp, `(() => {
+    const select = document.querySelector('#themeSelect');
+    select.value = 'indigo';
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+    return true;
+  })()`);
+}
+
 async function main() {
   const browserPath = edgeCandidates.find(fs.existsSync);
   assert.ok(browserPath, "Edge/Chrome não encontrado para o teste visual");
@@ -925,6 +963,7 @@ async function main() {
       await delay(50);
       assertSettingsLayout(await inspectSettings(cdp), `desktop/${tab}`, panel);
     }
+    await testThemePicker(cdp);
     await evaluate(cdp, "document.querySelector('#tabControls').click(); document.querySelector('.settings-tabs').scrollLeft = 0; document.querySelector('.settings-panels').scrollTop = 0; true");
     await delay(250);
     await capture(cdp, "settings-layout-desktop.png");

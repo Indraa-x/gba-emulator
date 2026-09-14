@@ -7,6 +7,7 @@
   --muted: #a5a5a8;
   --line: rgba(255, 255, 255, .14);
   --cyan: #72e8f3;
+  --accent-hi: #a8f4f6;
   --cyan-soft: rgba(114, 232, 243, .2);
   --pink: #ff91c8;
   --lavender: #b9adff;
@@ -17,6 +18,14 @@
   --display-font: ui-rounded, "Segoe UI Variable Display", "Segoe UI", Arial, sans-serif;
   --transition-fast: 120ms cubic-bezier(.2, .8, .2, 1);
   --transition-medium: 220ms cubic-bezier(.2, .8, .2, 1);
+}
+
+:root[data-theme="coral"] {
+  --cyan: #ff9fcf;
+  --accent-hi: #ffd3e7;
+  --cyan-soft: rgba(255, 159, 207, .2);
+  --pink: #72e8f3;
+  --lavender: #ffc1dc;
 }
 
 * {
@@ -492,7 +501,7 @@ button:disabled {
   place-items: center;
   border-radius: 50%;
   color: #282a31;
-  background: linear-gradient(145deg, #bdf7f7, #b9adff);
+  background: linear-gradient(145deg, var(--accent-hi), var(--lavender));
   box-shadow: 0 .35rem 1rem rgba(0, 0, 0, .2);
   font-size: 3rem;
   font-weight: 200;
@@ -1272,7 +1281,7 @@ button:disabled {
 
 .settings-tab.is-active {
   color: #172329;
-  background: linear-gradient(145deg, #a8f4f6, #72e8f3);
+  background: linear-gradient(145deg, var(--accent-hi), var(--cyan));
   box-shadow: 0 .35rem 1rem rgba(114, 232, 243, .22), inset 0 1px rgba(255, 255, 255, .5);
   font-weight: 750;
 }
@@ -1460,7 +1469,7 @@ input[type="range"] {
   border-color: transparent;
   border-radius: 999px;
   color: #002a30;
-  background: linear-gradient(145deg, #a8f4f6, #72e8f3);
+  background: linear-gradient(145deg, var(--accent-hi), var(--cyan));
   font-weight: 700;
 }
 

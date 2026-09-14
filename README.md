@@ -80,6 +80,8 @@ Selecione o botão de perfil rosa na barra inferior ou o avatar no canto superio
 - Carregamento local e arrastar-e-soltar de ROMs de até 32 MB.
 - CPU ARM7TDMI com instruções ARM e THUMB.
 - HOME em tela inteira com capas, barra de funções, relógio e status do controle.
+- Contador de posição no carrossel, estado vazio guiado e fallback desenhado para jogos sem capa.
+- Temas de acento Ciano e Coral selecionáveis em **Configurações → Tela**.
 - Perfil local com 10 avatares pixel-art e seleção salva no navegador.
 - Efeitos sonoros leves de navegação, gerados localmente pela Web Audio API.
 - Jogo isolado em tela cheia, mantendo a proporção original de 240 × 160 sem a antiga carcaça visual.

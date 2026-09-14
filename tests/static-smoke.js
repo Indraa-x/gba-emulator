@@ -106,7 +106,7 @@ assert.match(css, /\.selected-software-copy\s*{[^}]*width:\s*min\(68vw,\s*58rem\
 assert.match(css, /\.selected-software-copy p\s*{[^}]*text-overflow:\s*ellipsis[^}]*white-space:\s*nowrap/s, "título longo pode vazar da HOME");
 assert.match(ui, /function revealNavigationTarget\(element\)[\s\S]*?strip\.scrollLeft = Math\.max[\s\S]*?document\.scrollingElement/, "navegação entre jogos ainda pode deslocar a página inteira");
 assert.match(ui, /function pollGamepads\(\)\s*{\s*[\s\S]*?requestAnimationFrame\(pollGamepads\);\s*try\s*{/, "uma falha de interface ainda pode desligar o polling do controle");
-assert.match(html, /js\/ui\.js\?v=3/, "a correção do controle não possui invalidação do cache público");
+assert.match(html, /js\/ui\.js\?v=4/, "a versão atual da interface não possui invalidação do cache público");
 assert.match(html, /id="screenshotBtn"[^>]*hidden/, "ícone da câmera ainda aparece na barra principal");
 for (const selector of ["controls", "saves", "audio"]) {
   assert.match(css, new RegExp(`\\.system-button\\[data-open-settings="${selector}"\\]\\s*\\{\\s*--icon-color:`), `ícone sem cor própria: ${selector}`);
@@ -185,6 +185,9 @@ for (const filename of javascript) {
 
 assert.match(css, /\.settings-panels\s*\{[^}]*box-shadow:\s*inset/s, "área rolável das configurações não possui divisor visual");
 assert.match(css, /\.settings-tab\.is-active\s*\{[^}]*font-weight:\s*750/s, "aba ativa não possui hierarquia reforçada");
+assert.match(html, /id="themeSelect"[^>]*>[\s\S]*?value="indigo">Ciano<[\s\S]*?value="coral">Coral</, "seletor de tema Ciano/Coral não foi exposto");
+assert.match(css, /:root\[data-theme="coral"\]\s*\{[^}]*--cyan:\s*#ff9fcf[^}]*--pink:\s*#72e8f3/s, "tema Coral não redefine a paleta principal");
+assert.match(ui, /const THEMES = new Set\(\["indigo", "coral"\]\)/, "preferência de tema não é validada");
 assert.match(css, /@media \(max-width: 760px\)[\s\S]*?\.home-content\s*\{[^}]*grid-template-rows:\s*auto minmax\(0, 1fr\) auto/s, "HOME mobile ainda deixa o espaço livre abaixo do dock");
 assert.match(css, /--transition-fast:\s*120ms[^;]+;[\s\S]*?--transition-medium:\s*220ms/, "tokens de movimento consistentes não foram definidos");
 assert.match(css, /--display-font:\s*ui-rounded[^;]+;/, "fonte de destaque offline não foi definida");

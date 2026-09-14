@@ -29,6 +29,7 @@
     Object.freeze({ codePrefix: "BZM", names: ["minish cap"], src: "capas/The_Legend_of_Zelda_The_Minish_Cap_capa.png" }),
     Object.freeze({ codePrefix: "AA2", names: ["super mario advance 2", "super mario world"], src: "capas/MV5BMDY1ZmVkMmQtOWY0Ni00NjZlLTg5NjktYjZhY2YzNTZmYjljXkEyXkFqcGc@._V1_.jpg" })
   ]);
+  const THEMES = new Set(["indigo", "coral"]);
 
   const PROFILE_AVATARS = Object.freeze([
     Object.freeze({ id: "verdant-drake", name: "Broto esmeralda", src: "assets/avatars/verdant-drake.png?v=2" }),
@@ -138,6 +139,7 @@
       const loaded = {
         ...defaults,
         ...stored,
+        theme: THEMES.has(stored.theme) ? stored.theme : defaults.theme,
         profileAvatar: PROFILE_AVATARS.some((avatar) => avatar.id === stored.profileAvatar) ? stored.profileAvatar : defaults.profileAvatar,
         keyMap: { ...DEFAULT_KEYS, ...(stored.keyMap || {}) },
         gamepadMap,

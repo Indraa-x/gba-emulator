@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#191919">
   <meta name="description" content="Emulador de Game Boy Advance local com biblioteca inspirada em consoles modernos.">
   <title>Advance Home</title>
-  <link rel="stylesheet" href="style.css?v=3">
+  <link rel="stylesheet" href="style.css?v=4">
 </head>
 <body>
   <a class="skip-link" href="#softwareLibrary">Ir para os jogos</a>
@@ -141,7 +141,6 @@
 
   <input id="romInput" type="file" accept=".gba,application/octet-stream" hidden>
   <input id="fpsToggle" type="checkbox" hidden>
-  <select id="themeSelect" hidden><option value="indigo">Escuro</option><option value="arctic">Claro</option><option value="grape">Roxo</option><option value="ember">Vermelho</option><option value="graphite">Grafite</option></select>
 
   <dialog id="settingsDialog" class="settings-dialog" aria-labelledby="settingsTitle">
     <form method="dialog" class="settings-shell">
@@ -181,6 +180,7 @@
 
           <section id="panelVideo" class="settings-panel" data-panel="video" role="tabpanel" aria-labelledby="tabVideo">
             <div class="panel-title"><h3>Tela</h3><p>Ajustes aplicados ao jogo em tempo real.</p></div>
+            <label class="setting-row"><span><strong>Cor da interface</strong><small>Escolha o acento visual dos menus.</small></span><select id="themeSelect"><option value="indigo">Ciano</option><option value="coral">Coral</option></select></label>
             <label class="setting-row"><span><strong>Filtro de imagem</strong><small>Escolha como os pixels são exibidos.</small></span><select id="filterSelect"><option value="pixelated">Pixelado</option><option value="smooth">Suave</option><option value="lcd">Grade LCD</option></select></label>
             <label class="setting-row setting-row--range"><span><strong>Brilho</strong><small id="brightnessValue">100%</small></span><input id="brightnessRange" type="range" min="55" max="135" value="100"></label>
           </section>
@@ -276,6 +276,6 @@
   <script src="vendor/gbajs/js/gba.js"></script>
   <script src="js/gbajs-adapter.js"></script>
   <script src="js/gamepad.js?v=3"></script>
-  <script src="js/ui.js?v=3"></script>
+  <script src="js/ui.js?v=4"></script>
 </body>
 </html>
