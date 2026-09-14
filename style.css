@@ -14,6 +14,7 @@
   --green: #59d354;
   --display-brightness: 1;
   --ui-font: "Segoe UI", Arial, Helvetica, sans-serif;
+  --display-font: ui-rounded, "Segoe UI Variable Display", "Segoe UI", Arial, sans-serif;
   --transition-fast: 120ms cubic-bezier(.2, .8, .2, 1);
   --transition-medium: 220ms cubic-bezier(.2, .8, .2, 1);
 }
@@ -300,8 +301,10 @@ button:disabled {
   margin: 0;
   overflow: hidden;
   color: var(--cyan);
+  font-family: var(--display-font);
   font-size: clamp(1rem, 1.7vw, 1.35rem);
-  font-weight: 600;
+  font-weight: 800;
+  letter-spacing: -.015em;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -749,8 +752,10 @@ button:disabled {
 
 .quick-panel h2 {
   margin: 0 0 1.35rem;
+  font-family: var(--display-font);
   font-size: 1.8rem;
-  font-weight: 650;
+  font-weight: 800;
+  letter-spacing: -.02em;
 }
 
 .quick-grid {
@@ -1143,8 +1148,10 @@ button:disabled {
 
 .settings-head h2 {
   margin: .2rem 0 0;
+  font-family: var(--display-font);
   font-size: 1.65rem;
-  font-weight: 650;
+  font-weight: 800;
+  letter-spacing: -.02em;
 }
 
 .close-button {

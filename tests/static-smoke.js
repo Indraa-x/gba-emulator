@@ -179,6 +179,9 @@ for (const filename of javascript) {
 
 assert.match(css, /@media \(max-width: 760px\)[\s\S]*?\.home-content\s*\{[^}]*grid-template-rows:\s*auto minmax\(0, 1fr\) auto/s, "HOME mobile ainda deixa o espaço livre abaixo do dock");
 assert.match(css, /--transition-fast:\s*120ms[^;]+;[\s\S]*?--transition-medium:\s*220ms/, "tokens de movimento consistentes não foram definidos");
+assert.match(css, /--display-font:\s*ui-rounded[^;]+;/, "fonte de destaque offline não foi definida");
+assert.match(css, /\.selected-software-copy p\s*\{[^}]*font-family:\s*var\(--display-font\)[^}]*font-weight:\s*800/s, "título do jogo não usa a identidade tipográfica de destaque");
+assert.match(css, /\.settings-head h2\s*\{[^}]*font-family:\s*var\(--display-font\)[^}]*font-weight:\s*800/s, "títulos dos diálogos não usam a identidade tipográfica de destaque");
 assert.match(css, /\.software-card:active,[\s\S]*?\.quick-grid button:active\s*\{[^}]*scale\(\.97\)/, "feedback tátil de pressionamento não foi aplicado");
 
 assert.ok(fs.existsSync(path.join(root, "vendor", "gbajs", "COPYING")), "licença BSD do núcleo ausente");
