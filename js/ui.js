@@ -32,51 +32,55 @@
   const THEMES = new Set(["indigo", "coral"]);
   const UI_SOUND_PROFILES = Object.freeze({
     move: Object.freeze({
-      cooldown: 38,
-      cutoff: 3200,
+      cooldown: 46,
+      cutoff: 2700,
+      transient: Object.freeze({ duration: .011, gain: .012, frequency: 1550, q: 1.1 }),
       voices: Object.freeze([
-        Object.freeze({ delay: 0, from: 720, to: 825, duration: .048, gain: .03, type: "sine" })
+        Object.freeze({ delay: 0, from: 420, to: 455, duration: .043, gain: .024, type: "sine" })
       ])
     }),
     toggle: Object.freeze({
-      cooldown: 55,
-      cutoff: 3600,
+      cooldown: 58,
+      cutoff: 3100,
+      transient: Object.freeze({ duration: .012, gain: .015, frequency: 1850, q: 1.25 }),
       voices: Object.freeze([
-        Object.freeze({ delay: 0, from: 650, to: 710, duration: .072, gain: .028, type: "sine" }),
-        Object.freeze({ delay: .014, from: 980, to: 1060, duration: .066, gain: .012, type: "triangle" })
+        Object.freeze({ delay: 0, from: 520, to: 565, duration: .052, gain: .025, type: "triangle" })
       ])
     }),
     confirm: Object.freeze({
-      cooldown: 48,
-      cutoff: 3800,
+      cooldown: 55,
+      cutoff: 3300,
+      transient: Object.freeze({ duration: .012, gain: .013, frequency: 1700, q: 1.05 }),
       voices: Object.freeze([
-        Object.freeze({ delay: 0, from: 610, to: 665, duration: .105, gain: .031, type: "sine" }),
-        Object.freeze({ delay: .032, from: 915, to: 995, duration: .112, gain: .015, type: "triangle" })
+        Object.freeze({ delay: 0, from: 480, to: 525, duration: .064, gain: .026, type: "sine" }),
+        Object.freeze({ delay: .03, from: 720, to: 775, duration: .068, gain: .013, type: "sine" })
       ])
     }),
     back: Object.freeze({
-      cooldown: 65,
-      cutoff: 3000,
+      cooldown: 68,
+      cutoff: 2600,
+      transient: Object.freeze({ duration: .011, gain: .011, frequency: 1250, q: .9 }),
       voices: Object.freeze([
-        Object.freeze({ delay: 0, from: 540, to: 385, duration: .11, gain: .03, type: "sine" }),
-        Object.freeze({ delay: .012, from: 810, to: 575, duration: .085, gain: .009, type: "triangle" })
+        Object.freeze({ delay: 0, from: 500, to: 365, duration: .074, gain: .026, type: "sine" })
       ])
     }),
     open: Object.freeze({
-      cooldown: 75,
-      cutoff: 3700,
+      cooldown: 82,
+      cutoff: 3400,
+      transient: Object.freeze({ duration: .012, gain: .011, frequency: 1450, q: 1 }),
       voices: Object.freeze([
-        Object.freeze({ delay: 0, from: 455, to: 515, duration: .115, gain: .027, type: "sine" }),
-        Object.freeze({ delay: .045, from: 680, to: 770, duration: .135, gain: .017, type: "triangle" })
+        Object.freeze({ delay: 0, from: 440, to: 494, duration: .072, gain: .024, type: "sine" }),
+        Object.freeze({ delay: .038, from: 660, to: 740, duration: .082, gain: .014, type: "sine" })
       ])
     }),
     launch: Object.freeze({
-      cooldown: 180,
-      cutoff: 4000,
+      cooldown: 190,
+      cutoff: 3600,
+      transient: Object.freeze({ duration: .013, gain: .012, frequency: 1600, q: 1.1 }),
       voices: Object.freeze([
-        Object.freeze({ delay: 0, from: 494, to: 523, duration: .14, gain: .027, type: "sine" }),
-        Object.freeze({ delay: .058, from: 659, to: 698, duration: .16, gain: .022, type: "sine" }),
-        Object.freeze({ delay: .118, from: 784, to: 880, duration: .19, gain: .018, type: "triangle" })
+        Object.freeze({ delay: 0, from: 494, to: 523, duration: .086, gain: .025, type: "sine" }),
+        Object.freeze({ delay: .042, from: 659, to: 698, duration: .096, gain: .019, type: "sine" }),
+        Object.freeze({ delay: .082, from: 784, to: 831, duration: .112, gain: .014, type: "triangle" })
       ])
     })
   });
@@ -135,6 +139,7 @@
   let linkChannel = null;
   let uiAudioContext = null;
   let uiAudioBus = null;
+  let uiNoiseBuffer = null;
   const uiSoundPlayedAt = new Map();
   const pointerOwners = new Map();
 
@@ -361,20 +366,56 @@
     const input = uiAudioContext.createGain();
     const warmth = uiAudioContext.createBiquadFilter();
     const compressor = uiAudioContext.createDynamicsCompressor();
-    input.gain.value = .72;
+    input.gain.value = .62;
     warmth.type = "lowpass";
-    warmth.frequency.value = 4200;
-    warmth.Q.value = .55;
-    compressor.threshold.value = -30;
-    compressor.knee.value = 18;
-    compressor.ratio.value = 3;
-    compressor.attack.value = .004;
-    compressor.release.value = .16;
+    warmth.frequency.value = 4800;
+    warmth.Q.value = .35;
+    compressor.threshold.value = -32;
+    compressor.knee.value = 14;
+    compressor.ratio.value = 2.4;
+    compressor.attack.value = .002;
+    compressor.release.value = .11;
     input.connect(warmth);
     warmth.connect(compressor);
     compressor.connect(uiAudioContext.destination);
     uiAudioBus = Object.freeze({ input, warmth });
     return uiAudioBus;
+  }
+
+  function getUINoiseBuffer(context) {
+    if (uiNoiseBuffer && uiNoiseBuffer.sampleRate === context.sampleRate) return uiNoiseBuffer;
+    const duration = .024;
+    const frameCount = Math.ceil(context.sampleRate * duration);
+    const buffer = context.createBuffer(1, frameCount, context.sampleRate);
+    const samples = buffer.getChannelData(0);
+    let seed = 0x51f15e;
+    for (let index = 0; index < frameCount; index++) {
+      seed = (seed * 16807) % 2147483647;
+      const noise = seed / 1073741823.5 - 1;
+      const fade = 1 - index / frameCount;
+      samples[index] = noise * fade * fade;
+    }
+    uiNoiseBuffer = buffer;
+    return buffer;
+  }
+
+  function scheduleUISoundTransient(context, output, start, transient) {
+    const source = context.createBufferSource();
+    const clickTone = context.createBiquadFilter();
+    const clickEnvelope = context.createGain();
+    const clickEnd = start + transient.duration;
+    source.buffer = getUINoiseBuffer(context);
+    clickTone.type = "bandpass";
+    clickTone.frequency.setValueAtTime(transient.frequency, start);
+    clickTone.Q.value = transient.q;
+    clickEnvelope.gain.setValueAtTime(.0001, start);
+    clickEnvelope.gain.exponentialRampToValueAtTime(transient.gain, start + .0015);
+    clickEnvelope.gain.exponentialRampToValueAtTime(.0001, clickEnd);
+    source.connect(clickTone);
+    clickTone.connect(clickEnvelope);
+    clickEnvelope.connect(output);
+    source.start(start);
+    source.stop(clickEnd + .004);
   }
 
   function scheduleUISoundVoice(context, output, start, profile, voice) {
@@ -383,8 +424,8 @@
     const envelope = context.createGain();
     const voiceStart = start + voice.delay;
     const voiceEnd = voiceStart + voice.duration;
-    const attackEnd = voiceStart + Math.min(.008, voice.duration * .22);
-    const bodyEnd = voiceStart + voice.duration * .52;
+    const attackEnd = voiceStart + Math.min(.0035, voice.duration * .14);
+    const bodyEnd = voiceStart + voice.duration * .34;
 
     oscillator.type = voice.type;
     oscillator.frequency.setValueAtTime(voice.from, voiceStart);
@@ -394,7 +435,7 @@
     tone.Q.value = .45;
     envelope.gain.setValueAtTime(.0001, voiceStart);
     envelope.gain.exponentialRampToValueAtTime(voice.gain, attackEnd);
-    envelope.gain.exponentialRampToValueAtTime(Math.max(.0002, voice.gain * .42), bodyEnd);
+    envelope.gain.exponentialRampToValueAtTime(Math.max(.0002, voice.gain * .28), bodyEnd);
     envelope.gain.exponentialRampToValueAtTime(.0001, voiceEnd);
     oscillator.connect(tone);
     tone.connect(envelope);
@@ -415,8 +456,9 @@
       if (!bus) return;
       if (uiAudioContext.state === "suspended") uiAudioContext.resume().catch(() => {});
       bus.warmth.frequency.cancelScheduledValues(uiAudioContext.currentTime);
-      bus.warmth.frequency.setTargetAtTime(profile.cutoff + 650, uiAudioContext.currentTime, .018);
-      const start = uiAudioContext.currentTime + .006;
+      bus.warmth.frequency.setTargetAtTime(profile.cutoff + 1100, uiAudioContext.currentTime, .012);
+      const start = uiAudioContext.currentTime + .004;
+      scheduleUISoundTransient(uiAudioContext, bus.input, start, profile.transient);
       for (const voice of profile.voices) scheduleUISoundVoice(uiAudioContext, bus.input, start, profile, voice);
     } catch (_) {
       // A interface continua funcionando se o navegador bloquear áudio antes da primeira interação.
