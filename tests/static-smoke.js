@@ -183,6 +183,8 @@ for (const filename of javascript) {
   assert.equal(checked.status, 0, checked.stderr || `sintaxe inválida: ${filename}`);
 }
 
+assert.match(css, /\.settings-panels\s*\{[^}]*box-shadow:\s*inset/s, "área rolável das configurações não possui divisor visual");
+assert.match(css, /\.settings-tab\.is-active\s*\{[^}]*font-weight:\s*750/s, "aba ativa não possui hierarquia reforçada");
 assert.match(css, /@media \(max-width: 760px\)[\s\S]*?\.home-content\s*\{[^}]*grid-template-rows:\s*auto minmax\(0, 1fr\) auto/s, "HOME mobile ainda deixa o espaço livre abaixo do dock");
 assert.match(css, /--transition-fast:\s*120ms[^;]+;[\s\S]*?--transition-medium:\s*220ms/, "tokens de movimento consistentes não foram definidos");
 assert.match(css, /--display-font:\s*ui-rounded[^;]+;/, "fonte de destaque offline não foi definida");

@@ -807,7 +807,12 @@ async function inspectSettings(cdp) {
       }),
       tabRadius: parseFloat(getComputedStyle(tabs).borderRadius),
       panelRadius: parseFloat(getComputedStyle(panelHost).borderRadius),
+      panelShadow: getComputedStyle(panelHost).boxShadow,
       activeTabRadius: parseFloat(getComputedStyle(document.querySelector('.settings-tab.is-active')).borderRadius),
+      activeTabBackground: getComputedStyle(document.querySelector('.settings-tab.is-active')).backgroundImage,
+      inactiveTabBackground: getComputedStyle(document.querySelector('.settings-tab:not(.is-active)')).backgroundImage,
+      activeTabColor: getComputedStyle(document.querySelector('.settings-tab.is-active')).color,
+      inactiveTabColor: getComputedStyle(document.querySelector('.settings-tab:not(.is-active)')).color,
       activePanel: activePanel.id
     };
   })()`);
@@ -822,6 +827,9 @@ function assertSettingsLayout(settings, label, expectedPanel) {
   assert.equal(settings.controlsFit, true, `${label}: controles foram cortados`);
   assert.ok(settings.tabRadius >= 20 && settings.activeTabRadius >= 20, `${label}: abas perderam o formato de cápsula`);
   assert.ok(settings.panelRadius >= 16, `${label}: painel perdeu os cantos arredondados`);
+  assert.notEqual(settings.activeTabBackground, settings.inactiveTabBackground, `${label}: aba ativa não se diferencia das inativas`);
+  assert.notEqual(settings.activeTabColor, settings.inactiveTabColor, `${label}: hierarquia de texto das abas desapareceu`);
+  assert.notEqual(settings.panelShadow, "none", `${label}: área rolável perdeu o divisor visual`);
 }
 
 async function main() {

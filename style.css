@@ -1241,7 +1241,8 @@ button:disabled {
   gap: .18rem;
   border: 1px solid rgba(255, 255, 255, .055);
   border-radius: 999px;
-  background: rgba(12, 13, 17, .2);
+  background: rgba(12, 13, 17, .32);
+  box-shadow: inset 0 1px rgba(255, 255, 255, .025), 0 .55rem 1.2rem rgba(0, 0, 0, .12);
   scrollbar-width: none;
 }
 
@@ -1256,7 +1257,7 @@ button:disabled {
   flex: 1 0 auto;
   border: 0;
   border-radius: 999px;
-  color: #b6b6bb;
+  color: #999ca5;
   background: transparent;
   text-align: center;
   cursor: pointer;
@@ -1264,11 +1265,16 @@ button:disabled {
 }
 
 .settings-tab:hover,
-.settings-tab.is-active,
 .settings-tab.gamepad-focus {
+  color: var(--ink);
+  background: rgba(114, 232, 243, .09);
+}
+
+.settings-tab.is-active {
   color: #172329;
   background: linear-gradient(145deg, #a8f4f6, #72e8f3);
-  box-shadow: 0 .3rem .9rem rgba(114, 232, 243, .16);
+  box-shadow: 0 .35rem 1rem rgba(114, 232, 243, .22), inset 0 1px rgba(255, 255, 255, .5);
+  font-weight: 750;
 }
 
 .settings-panels {
@@ -1277,6 +1283,7 @@ button:disabled {
   border: 1px solid rgba(255, 255, 255, .045);
   border-radius: 1.45rem;
   background: rgba(12, 13, 17, .16);
+  box-shadow: inset 0 .8rem 1rem -.95rem rgba(0, 0, 0, .9), 0 -.55rem 1.2rem -.95rem rgba(114, 232, 243, .45);
   scrollbar-width: none;
 }
 
