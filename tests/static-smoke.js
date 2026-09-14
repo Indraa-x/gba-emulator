@@ -60,6 +60,8 @@ assert.doesNotMatch(ui, /libraryPosition|`\$\{position\} \/ \$\{total\}`/, "a l�
 assert.doesNotMatch(css, /\.library-position/, "o estilo do contador removido ainda está carregado");
 assert.match(ui, /function updateLibraryEmptyState\(gameCount\)[\s\S]*?is-library-empty[\s\S]*?updateLibraryEmptyState\(gameCount\)/, "estado vazio não é aplicado pela biblioteca");
 assert.match(css, /\.home-content\.is-library-empty \.software-card--add\s*\{[^}]*width:\s*clamp\(13rem,[^}]*height:\s*clamp\(13rem/s, "card de primeiro jogo não recebe destaque no estado vazio");
+assert.match(css, /\.add-symbol::before,[\s\S]*?\.add-symbol::after[\s\S]*?top:\s*50%;[\s\S]*?left:\s*50%;[\s\S]*?translate\(-50%, -50%\)/, "o símbolo de adicionar não está centralizado geometricamente");
+assert.doesNotMatch(html, /class="add-symbol"[^>]*>\+<\/span>/, "o símbolo ainda depende do alinhamento irregular da fonte");
 assert.doesNotMatch(ui, /LeafGreen|leafgreen|pokemon-leafgreen-version_p5c2/, "LeafGreen ainda aparece na HOME");
 assert.match(ui, /HIDDEN_GAME_CODES = new Set\(\["B6WE"\]\)/, "FIFA 2006 nÃ£o foi removido da biblioteca");
 assert.match(ui, /\.filter\(\(game\) => game\?\.rom && !isHiddenGame\(game\)\)/, "a HOME deve mostrar somente ROMs realmente salvas no navegador");
@@ -115,7 +117,7 @@ assert.match(css, /\.selected-software-copy\s*{[^}]*width:\s*min\(68vw,\s*58rem\
 assert.match(css, /\.selected-software-copy p\s*{[^}]*text-overflow:\s*ellipsis[^}]*white-space:\s*nowrap/s, "título longo pode vazar da HOME");
 assert.match(ui, /function revealNavigationTarget\(element\)[\s\S]*?strip\.scrollLeft = Math\.max[\s\S]*?document\.scrollingElement/, "navegação entre jogos ainda pode deslocar a página inteira");
 assert.match(ui, /function pollGamepads\(\)\s*{\s*[\s\S]*?requestAnimationFrame\(pollGamepads\);\s*try\s*{/, "uma falha de interface ainda pode desligar o polling do controle");
-assert.match(html, /style\.css\?v=6/, "a folha visual atual não possui invalidação do cache público");
+assert.match(html, /style\.css\?v=7/, "a folha visual atual não possui invalidação do cache público");
 assert.match(html, /js\/ui\.js\?v=10/, "a versão atual da interface não possui invalidação do cache público");
 assert.match(html, /id="screenshotBtn"[^>]*hidden/, "ícone da câmera ainda aparece na barra principal");
 for (const selector of ["controls", "saves", "audio"]) {

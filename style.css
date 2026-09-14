@@ -479,17 +479,31 @@ button:disabled {
 }
 
 .add-symbol {
-  display: grid;
+  position: relative;
+  display: block;
   width: 4.1rem;
   height: 4.1rem;
-  place-items: center;
+  flex: 0 0 auto;
   border-radius: 50%;
-  color: #282a31;
   background: linear-gradient(145deg, var(--accent-hi), var(--lavender));
   box-shadow: 0 .35rem 1rem rgba(0, 0, 0, .2);
-  font-size: 3rem;
-  font-weight: 200;
-  line-height: 1;
+}
+
+.add-symbol::before,
+.add-symbol::after {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1.55rem;
+  height: .125rem;
+  content: "";
+  border-radius: 999px;
+  background: #282a31;
+  transform: translate(-50%, -50%);
+}
+
+.add-symbol::after {
+  transform: translate(-50%, -50%) rotate(90deg);
 }
 
 .recent-empty {
