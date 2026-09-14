@@ -12,7 +12,7 @@
   </p>
 
   <a href="https://indraa-x.github.io/gba-emulator/">
-    <img src="docs/images/advance-home.png" width="100%" alt="Tela HOME do Advance Home com biblioteca de jogos">
+    <img src="docs/images/advance-home.png" width="100%" alt="Tela HOME do Advance Home com uma biblioteca local preenchida">
   </a>
 </div>
 
@@ -65,15 +65,15 @@ Os sons da interface são originais e sintetizados localmente pela Web Audio API
 ### No navegador
 
 1. Acesse **[indraa-x.github.io/gba-emulator](https://indraa-x.github.io/gba-emulator/)**.
-2. Escolha uma capa ou clique em **Adicionar jogo**.
-3. Na primeira vez, selecione sua cópia `.gba` correspondente.
-4. A ROM será validada e ficará disponível somente no IndexedDB desse navegador.
+2. No primeiro acesso, a HOME mostra somente **Adicionar jogo**.
+3. Selecione sua cópia `.gba`.
+4. A ROM e sua capa ficam salvas somente no IndexedDB desse navegador e passam a aparecer na HOME nas próximas visitas.
 
 ### No computador
 
-1. Coloque suas ROMs `.gba` na pasta do projeto.
-2. Execute **`Iniciar Advance Home.cmd`**.
-3. A HOME abrirá em `http://127.0.0.1:8765/`.
+1. Execute **`Iniciar Advance Home.cmd`**.
+2. A HOME abrirá em `http://127.0.0.1:8765/`.
+3. Use **Adicionar jogo** e escolha uma ROM `.gba`; ela continuará disponível nesse navegador.
 
 Também é possível iniciar manualmente:
 

@@ -14,20 +14,12 @@
     SELECT: "ShiftLeft"
   });
   const GAMEPAD_BINDINGS = window.GBA.GamepadBindings;
-  const LOCAL_ROM_FILENAME = "Pokemon - Emerald Version (USA, Europe).gba";
-  const IS_GITHUB_PAGES = /\.github\.io$/i.test(window.location.hostname);
   const HIDDEN_GAME_CODES = new Set(["B6WE"]);
-  const LOCAL_GAMES = Object.freeze([
-    Object.freeze({ code: "BPEE", title: "Pokémon Emerald", filename: LOCAL_ROM_FILENAME, cover: "capas/PokemonEmeraldBox.jpg", customCover: true }),
-    Object.freeze({ code: "BPRE", title: "Pokémon FireRed", filename: "Pokemon - FireRed Version (USA).gba", cover: "capas/firered.jpg", customCover: true }),
-    Object.freeze({ code: "BZMP", title: "The Legend of Zelda: The Minish Cap", filename: "Legend of Zelda, The - The Minish Cap (Europe) (En,Fr,De,Es,It).gba", cover: "capas/The_Legend_of_Zelda_The_Minish_Cap_capa.png", customCover: true }),
-    Object.freeze({ code: "AA2E", title: "Super Mario Advance 2: Super Mario World", filename: "Super Mario Advance 2 - Super Mario World (USA).gba", cover: "capas/MV5BMDY1ZmVkMmQtOWY0Ni00NjZlLTg5NjktYjZhY2YzNTZmYjljXkEyXkFqcGc@._V1_.jpg", customCover: true })
-  ]);
   const GAME_COVERS = Object.freeze([
-    Object.freeze({ codePrefix: "BPE", names: ["emerald"], src: "capas/PokemonEmeraldBox.jpg" }),
-    Object.freeze({ codePrefix: "BPR", names: ["firered", "fire red"], src: "capas/firered.jpg" }),
-    Object.freeze({ codePrefix: "BZM", names: ["minish cap"], src: "capas/The_Legend_of_Zelda_The_Minish_Cap_capa.png" }),
-    Object.freeze({ codePrefix: "AA2", names: ["super mario advance 2", "super mario world"], src: "capas/MV5BMDY1ZmVkMmQtOWY0Ni00NjZlLTg5NjktYjZhY2YzNTZmYjljXkEyXkFqcGc@._V1_.jpg" })
+    Object.freeze({ codePrefix: "BPE", title: "Pokémon Emerald", names: ["emerald"], src: "capas/PokemonEmeraldBox.jpg" }),
+    Object.freeze({ codePrefix: "BPR", title: "Pokémon FireRed", names: ["firered", "fire red"], src: "capas/firered.jpg" }),
+    Object.freeze({ codePrefix: "BZM", title: "The Legend of Zelda: The Minish Cap", names: ["minish cap"], src: "capas/The_Legend_of_Zelda_The_Minish_Cap_capa.png" }),
+    Object.freeze({ codePrefix: "AA2", title: "Super Mario Advance 2: Super Mario World", names: ["super mario advance 2", "super mario world"], src: "capas/MV5BMDY1ZmVkMmQtOWY0Ni00NjZlLTg5NjktYjZhY2YzNTZmYjljXkEyXkFqcGc@._V1_.jpg" })
   ]);
   const THEMES = new Set(["indigo", "coral"]);
   const UI_SOUND_PROFILES = Object.freeze({
@@ -133,7 +125,6 @@
   let gamepadReadWarningShown = false;
   let gamepadPollWarningShown = false;
   let gamepadInputSuspended = false;
-  let pendingLocalGame = null;
   const gamepadRepeatAt = new Map();
   let lastRomFile = null;
   let linkChannel = null;
@@ -616,9 +607,17 @@
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
       .toLowerCase();
-    return GAME_COVERS.find((cover) => (
+    return GAME_COVERS.find((cover) => cover.src === game.cover) || GAME_COVERS.find((cover) => (
       code.startsWith(cover.codePrefix) || cover.names.some((name) => searchableName.includes(name))
     ));
+  }
+
+  function getLibraryGameTitle(game) {
+    return game.displayTitle
+      || getGameCover(game)?.title
+      || game.filename?.replace(/\.gba$/i, "")
+      || game.title
+      || "Jogo GBA";
   }
 
   function isHiddenGame(game) {
@@ -672,45 +671,18 @@
     } catch (_) {
       games = [];
     }
-    let firstLocalGame = null;
-    for (const game of LOCAL_GAMES) {
-      const storedLocalGame = games.find((stored) => stored.code === game.code && stored.rom);
-      const localGame = document.createElement("button");
-      localGame.type = "button";
-      localGame.className = `software-card${game.code === "BPEE" ? " software-card--pokemon" : ""}`;
-      localGame.dataset.gameCode = game.code;
-      localGame.dataset.gameTitle = game.title;
-      localGame.dataset.gameMeta = IS_GITHUB_PAGES && !storedLocalGame ? "Escolha sua ROM local" : "Game Boy Advance";
-      localGame.setAttribute("aria-label", storedLocalGame ? `Iniciar ${game.title}` : `Selecionar ROM de ${game.title}`);
-      const localCover = document.createElement("img");
-      localCover.src = game.cover;
-      localCover.addEventListener("error", () => {
-        if (game.code === "BPEE") localCover.src = "tests/pokemon-cover.png";
-      }, { once: true });
-      localCover.alt = "";
-      if (game.customCover) {
-        localCover.className = "game-cover game-cover--custom";
-        localCover.dataset.coverSource = "custom";
-      }
-      const localLabel = document.createElement("span");
-      localLabel.className = "software-card__label";
-      localLabel.textContent = game.title;
-      localGame.append(localCover, localLabel);
-      localGame.addEventListener("click", () => storedLocalGame ? loadRecentGame(storedLocalGame.id) : loadLocalGame(game));
-      bindSoftwareCard(localGame);
-      refs.recentList.appendChild(localGame);
-      if (!firstLocalGame) firstLocalGame = localGame;
-    }
-
-    games.sort((a, b) => b.loadedAt - a.loadedAt);
-    const localCodes = new Set(LOCAL_GAMES.map((game) => game.code));
-    const recent = games.filter((game) => !localCodes.has(game.code) && !isHiddenGame(game));
+    const recent = games
+      .filter((game) => game?.rom && !isHiddenGame(game))
+      .sort((a, b) => (b.loadedAt || 0) - (a.loadedAt || 0));
+    let firstSavedGame = null;
     for (const game of recent) {
       const button = document.createElement("button");
       button.type = "button";
-      button.className = "software-card recent-game";
+      const isPokemonEmerald = String(game.code || "").toUpperCase().startsWith("BPE");
+      button.className = `software-card recent-game${isPokemonEmerald ? " software-card--pokemon" : ""}`;
       button.dataset.gameId = game.id;
-      button.dataset.gameTitle = game.filename?.replace(/\.gba$/i, "") || game.title;
+      button.dataset.gameCode = game.code || "";
+      button.dataset.gameTitle = getLibraryGameTitle(game);
       button.dataset.gameMeta = "Game Boy Advance";
       button.setAttribute("aria-label", `Iniciar ${button.dataset.gameTitle}`);
       const thumbnail = createRecentThumbnail(game);
@@ -721,10 +693,11 @@
       button.addEventListener("click", () => loadRecentGame(game.id));
       bindSoftwareCard(button);
       refs.recentList.appendChild(button);
+      if (!firstSavedGame) firstSavedGame = button;
     }
-    const gameCount = refs.recentList.querySelectorAll(".software-card, .recent-game").length;
+    const gameCount = recent.length;
     updateLibraryEmptyState(gameCount);
-    selectSoftwareCard(firstLocalGame || refs.dropZone);
+    selectSoftwareCard(firstSavedGame || refs.dropZone);
   }
 
   function selectSoftwareCard(button) {
@@ -745,46 +718,6 @@
     button.addEventListener("pointerenter", () => selectSoftwareCard(button));
   }
 
-  function requestLocalROM(game) {
-    pendingLocalGame = game;
-    refs.romInput.value = "";
-    showToast(`Selecione no seu dispositivo a ROM de ${game.title}. O arquivo ficará somente neste navegador.`, false, 6200);
-    if (typeof refs.romInput.showPicker === "function") refs.romInput.showPicker();
-    else refs.romInput.click();
-  }
-
-  async function loadLocalGame() {
-    const game = arguments[0] || LOCAL_GAMES[0];
-    if (IS_GITHUB_PAGES) {
-      requestLocalROM(game);
-      return;
-    }
-    setLoading(true, `Iniciando ${game.title}…`);
-    try {
-      const storedGames = await emulator.database.getAll("games").catch(() => []);
-      const storedGame = storedGames.find((stored) => stored.code === game.code && stored.rom);
-      if (storedGame) {
-        await emulator.loadStoredROM(storedGame.id);
-        return;
-      }
-      if (window.location.protocol === "file:") {
-        throw new Error("Abra pelo arquivo Iniciar Advance Home.cmd para carregar o jogo diretamente.");
-      }
-      const romUrl = new URL(`./${encodeURIComponent(game.filename)}`, window.location.href);
-      const response = await fetch(romUrl);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const file = new File([await response.blob()], game.filename, { type: "application/octet-stream" });
-      await loadROMFile(file);
-    } catch (error) {
-      const message = String(error?.message || "");
-      showToast(message.startsWith("Abra pelo arquivo")
-        ? message
-        : `A ROM de ${game.title} não foi encontrada na pasta nem na biblioteca.`, true, 5200);
-    } finally {
-      setLoading(false);
-    }
-  }
-
   async function loadRecentGame(id) {
     setLoading(true, "Inserindo cartucho…");
     try {
@@ -803,23 +736,37 @@
     if (file.size > 32 * 1024 * 1024) throw new Error("A ROM ultrapassa o limite de 32 MB do GBA.");
   }
 
+  async function persistImportedGameDetails(gameInfo) {
+    try {
+      const game = await emulator.database.get("games", gameInfo.id);
+      if (!game?.rom) return { saved: false, title: getLibraryGameTitle(gameInfo), hasCover: false };
+      const knownCover = getGameCover({ ...game, ...gameInfo });
+      game.displayTitle = knownCover?.title || getLibraryGameTitle({ ...game, ...gameInfo });
+      if (knownCover) game.cover = knownCover.src;
+      game.loadedAt = Date.now();
+      await emulator.database.put("games", game);
+      await renderRecentGames();
+      return { saved: true, title: game.displayTitle, hasCover: Boolean(knownCover) };
+    } catch (_) {
+      return { saved: false, title: getLibraryGameTitle(gameInfo), hasCover: false };
+    }
+  }
+
   async function loadROMFile(file) {
     try {
       validateROMFile(file);
       lastRomFile = file;
       setLoading(true, "Verificando cartucho…");
       const buffer = await file.arrayBuffer();
-      const requestedGame = pendingLocalGame;
-      pendingLocalGame = null;
-      if (requestedGame) {
-        const bytes = new Uint8Array(buffer);
-        const code = String.fromCharCode(...bytes.subarray(0xac, 0xb0));
-        if (code !== requestedGame.code) {
-          throw new Error(`Esta ROM não corresponde a ${requestedGame.title}.`);
-        }
-      }
       const result = await emulator.loadROM(buffer, file.name, true);
-      if (requestedGame) showToast(`${requestedGame.title} foi salvo somente neste navegador.`);
+      const stored = await persistImportedGameDetails(result);
+      if (!stored.saved) {
+        showToast("O jogo abriu, mas o navegador não conseguiu salvá-lo para a próxima visita.", true, 5200);
+      } else if (stored.hasCover) {
+        showToast(`${stored.title} e sua capa foram salvos neste navegador.`);
+      } else {
+        showToast(`${stored.title} foi salvo. A capa será criada automaticamente.`);
+      }
       return result;
     } catch (error) {
       showToast(error.message || "Falha ao carregar a ROM.", true, 3600);
@@ -1530,7 +1477,6 @@
   function bindROMInput() {
     bindSoftwareCard(refs.dropZone);
     refs.dropZone.addEventListener("click", () => {
-      pendingLocalGame = null;
       refs.romInput.click();
     });
     refs.romInput.addEventListener("change", () => loadROMFile(refs.romInput.files[0]));
@@ -1548,14 +1494,12 @@
     refs.dropZone.addEventListener("drop", (event) => {
       event.preventDefault();
       refs.dropZone.classList.remove("is-dragging");
-      pendingLocalGame = null;
       loadROMFile(event.dataTransfer.files[0]);
     });
     window.addEventListener("dragover", (event) => event.preventDefault());
     window.addEventListener("drop", (event) => {
       event.preventDefault();
       if (event.dataTransfer.files[0]) {
-        pendingLocalGame = null;
         loadROMFile(event.dataTransfer.files[0]);
       }
     });

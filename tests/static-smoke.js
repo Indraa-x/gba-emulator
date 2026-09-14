@@ -32,8 +32,7 @@ assert.match(ui, /const menuButton = Boolean\(activeControls\.get\("START"\)\)/,
 assert.doesNotMatch(ui, /activeControls\.get\("SELECT"\)\s*&&\s*activeControls\.get\("START"\)/, "a combinação antiga Select + Start ainda está ativa");
 assert.match(css, /html,\s*body\s*{[^}]*overflow:\s*hidden/s, "a barra externa da página não foi removida");
 assert.doesNotMatch(html, /class="shell"|class="screen-zone"|class="controls-zone"/, "a carcaça antiga ainda está na interface");
-assert.match(ui, /async function loadLocalGame\(\)/, "atalho para a ROM local não foi encontrado");
-assert.match(ui, /localCover\.src = "tests\/pokemon-cover\.png"/, "a capa limpa do Pokémon não está ligada à biblioteca");
+assert.doesNotMatch(ui, /LOCAL_GAMES|loadLocalGame|requestLocalROM|pendingLocalGame|IS_GITHUB_PAGES/, "a HOME ainda possui jogos ou atalhos fixos");
 for (const cover of [
   "capas/PokemonEmeraldBox.jpg",
   "capas/MV5BMDY1ZmVkMmQtOWY0Ni00NjZlLTg5NjktYjZhY2YzNTZmYjljXkEyXkFqcGc@._V1_.jpg",
@@ -54,19 +53,14 @@ assert.match(ui, /function updateLibraryEmptyState\(gameCount\)[\s\S]*?is-librar
 assert.match(css, /\.home-content\.is-library-empty \.software-card--add\s*\{[^}]*width:\s*clamp\(13rem,[^}]*height:\s*clamp\(13rem/s, "card de primeiro jogo não recebe destaque no estado vazio");
 assert.doesNotMatch(ui, /LeafGreen|leafgreen|pokemon-leafgreen-version_p5c2/, "LeafGreen ainda aparece na HOME");
 assert.match(ui, /HIDDEN_GAME_CODES = new Set\(\["B6WE"\]\)/, "FIFA 2006 nÃ£o foi removido da biblioteca");
-assert.match(ui, /!localCodes\.has\(game\.code\) && !isHiddenGame\(game\)/, "jogos ocultos ainda podem aparecer na HOME");
+assert.match(ui, /\.filter\(\(game\) => game\?\.rom && !isHiddenGame\(game\)\)/, "a HOME deve mostrar somente ROMs realmente salvas no navegador");
 assert.match(ui, /const customCover = getGameCover\(game\);[\s\S]*?image\.src = customCover\.src/, "capa personalizada não tem prioridade sobre capturas antigas");
 assert.match(css, /img\.game-cover--custom[\s\S]*?object-fit:\s*contain;[\s\S]*?object-position:\s*center;/, "capas personalizadas podem ser deformadas ou cortadas");
 assert.doesNotMatch(html, /pokemon-browser\.png/, "a captura da interface antiga ainda é usada como avatar");
-assert.ok(fs.existsSync(path.join(root, "tests", "pokemon-cover.png")), "capa limpa do Pokémon ausente");
-const localGameLoader = ui.match(/async function loadLocalGame\(\)\s*{([\s\S]*?)\n  }\n\n  async function loadRecentGame/);
-assert.ok(localGameLoader, "fluxo da capa fixa não foi encontrado");
-assert.doesNotMatch(localGameLoader[1], /romInput\.click\(\)/, "a capa fixa ainda abre o seletor de ROM");
-assert.match(localGameLoader[1], /fetch\(romUrl\)/, "a capa fixa não carrega a ROM diretamente");
-assert.match(localGameLoader[1], /finally\s*{\s*setLoading\(false\);\s*}/, "a tela de carregamento pode ficar presa ao abrir uma ROM salva");
-assert.match(ui, /const IS_GITHUB_PAGES = \/\\\.github\\\.io\$\/i/, "a publicação não identifica o GitHub Pages");
-assert.match(ui, /function requestLocalROM\(game\)/, "as capas não solicitam a ROM local na versão pública");
-assert.match(ui, /code !== requestedGame\.code/, "a ROM escolhida não é validada contra a capa selecionada");
+assert.match(ui, /async function persistImportedGameDetails\(gameInfo\)/, "os detalhes do jogo importado não são persistidos");
+assert.match(ui, /game\.displayTitle = knownCover\?\.title[\s\S]*?game\.cover = knownCover\.src[\s\S]*?database\.put\("games", game\)/, "a capa reconhecida não fica associada ao jogo salvo");
+assert.match(ui, /const result = await emulator\.loadROM\(buffer, file\.name, true\);[\s\S]*?persistImportedGameDetails\(result\)/, "a importação não salva jogo e capa na biblioteca");
+assert.match(html, /id="selectedGameTitle">Adicionar jogo<[\s\S]*?id="selectedGameMeta">Escolha uma ROM \.gba<[\s\S]*?id="libraryPosition"[^>]*>1 \/ 1</, "o estado inicial da HOME ainda anuncia jogos pré-carregados");
 assert.match(html, /id="uiSoundToggle"/, "controle dos sons do menu não foi encontrado");
 assert.equal((html.match(/class="profile-avatar profile-avatar--primary"/g) || []).length, 1, "deve existir somente um avatar no canto superior esquerdo");
 assert.match(html, /id="profileDialog"/, "editor de perfil não foi encontrado");
@@ -112,7 +106,7 @@ assert.match(css, /\.selected-software-copy\s*{[^}]*width:\s*min\(68vw,\s*58rem\
 assert.match(css, /\.selected-software-copy p\s*{[^}]*text-overflow:\s*ellipsis[^}]*white-space:\s*nowrap/s, "título longo pode vazar da HOME");
 assert.match(ui, /function revealNavigationTarget\(element\)[\s\S]*?strip\.scrollLeft = Math\.max[\s\S]*?document\.scrollingElement/, "navegação entre jogos ainda pode deslocar a página inteira");
 assert.match(ui, /function pollGamepads\(\)\s*{\s*[\s\S]*?requestAnimationFrame\(pollGamepads\);\s*try\s*{/, "uma falha de interface ainda pode desligar o polling do controle");
-assert.match(html, /js\/ui\.js\?v=6/, "a versão atual da interface não possui invalidação do cache público");
+assert.match(html, /js\/ui\.js\?v=7/, "a versão atual da interface não possui invalidação do cache público");
 assert.match(html, /id="screenshotBtn"[^>]*hidden/, "ícone da câmera ainda aparece na barra principal");
 for (const selector of ["controls", "saves", "audio"]) {
   assert.match(css, new RegExp(`\\.system-button\\[data-open-settings="${selector}"\\]\\s*\\{\\s*--icon-color:`), `ícone sem cor própria: ${selector}`);

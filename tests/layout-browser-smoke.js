@@ -67,8 +67,9 @@ async function evaluate(cdp, expression) {
 async function waitForHome(cdp) {
   for (let attempt = 0; attempt < 60; attempt++) {
     const ready = await evaluate(cdp, `(() => {
-      const image = document.querySelector('.software-card--pokemon img');
-      return document.readyState === 'complete' && Boolean(image?.naturalWidth) && !document.querySelector('.boot-screen');
+      const game = document.querySelector('.software-card--pokemon');
+      const gameReady = !game || Boolean(game.querySelector('img')?.naturalWidth);
+      return document.readyState === 'complete' && Boolean(document.querySelector('#dropZone')) && gameReady && !document.querySelector('.boot-screen');
     })()`);
     if (ready) return;
     await delay(100);
@@ -83,7 +84,10 @@ async function reloadAndWaitForHome(cdp) {
     try {
       const state = await evaluate(cdp, `(() => ({
         id: window.__layoutDocumentId || '',
-        ready: document.readyState === 'complete' && Boolean(document.querySelector('.software-card--pokemon img')?.naturalWidth) && !document.querySelector('.boot-screen')
+        ready: document.readyState === 'complete'
+          && Boolean(document.querySelector('#dropZone'))
+          && (!document.querySelector('.software-card--pokemon') || Boolean(document.querySelector('.software-card--pokemon img')?.naturalWidth))
+          && !document.querySelector('.boot-screen')
       }))()`);
       if (state.id && state.id !== previousDocument && state.ready) return;
     } catch (_) {
@@ -297,11 +301,33 @@ async function testCustomCovers(cdp) {
   await capture(cdp, "home-covers-desktop.png");
 }
 
+async function seedSavedLibrary(cdp) {
+  const games = [
+    { id: "saved-emerald", code: "BPEE", title: "POKEMON EMER", filename: "Pokemon Emerald.gba" },
+    { id: "saved-firered", code: "BPRE", title: "POKEMON FIRE", filename: "Pokemon FireRed.gba" },
+    { id: "saved-zelda", code: "BZMP", title: "ZELDA MC", filename: "The Legend of Zelda - The Minish Cap.gba" },
+    { id: "saved-mario", code: "AA2E", title: "SUPER MARIO", filename: "Super Mario Advance 2 - Super Mario World.gba" }
+  ];
+  await evaluate(cdp, `(async () => {
+    const games = ${JSON.stringify(games)};
+    for (let index = 0; index < games.length; index++) {
+      await window.advanceLab.database.put('games', {
+        ...games[index],
+        loadedAt: Date.now() - index,
+        thumbnail: null,
+        rom: new ArrayBuffer(192)
+      });
+    }
+    return true;
+  })()`);
+  await reloadAndWaitForHome(cdp);
+}
+
 async function testFallbackCover(cdp) {
   await evaluate(cdp, `(async () => {
     await window.advanceLab.database.put('games', {
       id: 'fallback-cover-smoke', code: 'TEST', title: 'Cartucho sem arte',
-      filename: 'Cartucho sem arte.gba', loadedAt: Date.now(), thumbnail: null, rom: null
+      filename: 'Cartucho sem arte.gba', loadedAt: Date.now(), thumbnail: null, rom: new ArrayBuffer(192)
     });
     return true;
   })()`);
@@ -332,14 +358,12 @@ async function testLibraryEmptyState(cdp) {
     const list = document.querySelector('#recentList');
     const add = document.querySelector('#dropZone');
     const hint = document.querySelector('#libraryEmptyHint');
-    list.replaceChildren();
-    content.classList.add('is-library-empty');
-    hint.hidden = false;
     add.focus({ preventScroll: true });
-    add.dispatchEvent(new FocusEvent('focus'));
     const stripRect = add.closest('.software-strip').getBoundingClientRect();
     const addRect = add.getBoundingClientRect();
     return {
+      savedCards: list.querySelectorAll('.software-card').length,
+      emptyClass: content.classList.contains('is-library-empty'),
       hint: hint.textContent.trim(),
       hintVisible: getComputedStyle(hint).display !== 'none',
       centered: Math.abs((addRect.left + addRect.right) / 2 - (stripRect.left + stripRect.right) / 2) <= 16,
@@ -348,52 +372,13 @@ async function testLibraryEmptyState(cdp) {
       overflow: document.documentElement.scrollWidth > innerWidth || document.documentElement.scrollHeight > innerHeight
     };
   })()`);
+  assert.equal(state.savedCards, 0, "a HOME nova exibiu jogos antes de uma importação");
+  assert.equal(state.emptyClass, true, "a biblioteca nova não entrou no estado vazio");
   assert.equal(state.hint, "Arraste uma ROM .gba aqui ou clique para escolher um arquivo.", "texto do estado vazio incorreto");
   assert.equal(state.hintVisible && state.centered && state.enlarged, true, "estado vazio não centralizou e destacou Adicionar jogo");
   assert.equal(state.selectedTitle, "Adicionar jogo", "estado vazio não selecionou a ação principal");
   assert.equal(state.overflow, false, "estado vazio criou rolagem externa");
   await capture(cdp, "home-empty-library-desktop.png");
-  await reloadAndWaitForHome(cdp);
-}
-
-  async function testLocalCoverLaunches(cdp) {
-    await reloadAndWaitForHome(cdp);
-    const expectedCovers = ["BPEE", "BPRE", "BZMP", "AA2E"];
-    const expectedSpeeds = { BPEE: 2, BPRE: 2, BZMP: 1, AA2E: 1 };
-    for (const expectedCode of ["BPEE", "BPRE", "BZMP", "AA2E"]) {
-      const passes = expectedCode === "BPEE" ? 2 : 1;
-      for (let pass = 0; pass < passes; pass++) {
-      const coversReady = await evaluate(cdp, `${JSON.stringify(expectedCovers)}.every((code) => {
-        const image = document.querySelector('.software-card[data-game-code="' + code + '"] img');
-        return Boolean(image?.complete && image.naturalWidth && image.naturalHeight);
-      })`);
-        assert.equal(coversReady, true, "uma ou mais capas desapareceram da HOME");
-        await evaluate(cdp, `document.querySelector('.software-card[data-game-code="${expectedCode}"]').click(); true`);
-        let launchedState = null;
-        for (let attempt = 0; attempt < 100; attempt++) {
-          const state = await evaluate(cdp, `({
-            code: window.advanceLab.romInfo?.code || '',
-            error: window.advanceLab.lastError?.message || '',
-            loading: document.querySelector('#loadingOverlay').classList.contains('is-active'),
-            speed: window.advanceLab.core.framesPerTick,
-            playbackRate: window.advanceLab.core.audio.playbackRate,
-            preservePitch: window.advanceLab.core.audio.preservePitch
-          })`);
-          if (state.error) throw new Error(`a capa ${expectedCode} falhou ao abrir: ${state.error}`);
-          if (state.code === expectedCode && !state.loading) {
-            launchedState = state;
-            break;
-          }
-          if (attempt === 99) throw new Error(`a capa ${expectedCode} nao abriu a ROM correspondente ou manteve o carregamento preso`);
-          await delay(100);
-        }
-        assert.equal(launchedState.speed, expectedSpeeds[expectedCode], `${expectedCode}: velocidade incorreta ao abrir pela capa`);
-        assert.equal(launchedState.playbackRate, expectedSpeeds[expectedCode], `${expectedCode}: áudio não acompanha a velocidade fixa`);
-        assert.equal(launchedState.preservePitch, expectedSpeeds[expectedCode] > 1, `${expectedCode}: modo de áudio incorreto`);
-        await evaluate(cdp, `window.advanceLab.pause(); true`);
-      await reloadAndWaitForHome(cdp);
-    }
-  }
 }
 
 async function testHiddenFifa(cdp) {
@@ -921,6 +906,8 @@ async function main() {
     await cdp.call("Emulation.setDeviceMetricsOverride", { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
     await cdp.call("Page.navigate", { url: `http://${HOST}:${port}/` });
     await waitForHome(cdp);
+    await testLibraryEmptyState(cdp);
+    await seedSavedLibrary(cdp);
     const desktop = await inspectHome(cdp);
     assertHomeLayout(desktop, "desktop");
     await capture(cdp, "home-layout-desktop.png");
@@ -928,7 +915,6 @@ async function main() {
     await testGamepadRecovery(cdp);
     await testCustomCovers(cdp);
     await testFallbackCover(cdp);
-    await testLibraryEmptyState(cdp);
     await testAvatarPicker(cdp);
     await testFullscreenEdges(cdp);
 
@@ -1047,9 +1033,8 @@ async function main() {
     }, "ajustes do menu rápido nao foram aplicados e salvos");
     await capture(cdp, "quick-menu-mobile.png");
     await testHiddenFifa(cdp);
-    await testLocalCoverLaunches(cdp);
 
-    console.log("PASS: perfil local, HOME, menu rápido e quatro abas de configurações validados em desktop e celular");
+    console.log("PASS: biblioteca local, perfil, HOME, menu rápido e quatro abas validados em desktop e celular");
   } finally {
     if (cdp) cdp.close();
     if (browser.exitCode === null) {
