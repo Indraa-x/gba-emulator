@@ -177,6 +177,8 @@ for (const filename of javascript) {
   assert.equal(checked.status, 0, checked.stderr || `sintaxe inválida: ${filename}`);
 }
 
+assert.match(css, /@media \(max-width: 760px\)[\s\S]*?\.home-content\s*\{[^}]*grid-template-rows:\s*auto minmax\(0, 1fr\) auto/s, "HOME mobile ainda deixa o espaço livre abaixo do dock");
+
 assert.ok(fs.existsSync(path.join(root, "vendor", "gbajs", "COPYING")), "licença BSD do núcleo ausente");
 assert.ok(fs.existsSync(path.join(root, "Iniciar Advance Home.cmd")), "inicializador de um clique ausente");
 const launcher = fs.readFileSync(path.join(root, "Iniciar Advance Home.cmd"), "utf8");

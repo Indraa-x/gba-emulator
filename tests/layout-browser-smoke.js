@@ -164,6 +164,9 @@ function assertHomeLayout(layout, label) {
     assert.ok(layout.dockWidthRatio >= .62 && layout.dockWidthRatio <= .7, `${label}: barra principal fora da proporção do Switch 2 (${layout.dockWidthRatio.toFixed(3)})`);
     assert.ok(layout.cardStartRatio >= .05 && layout.cardStartRatio <= .12, `${label}: capas fora da margem horizontal esperada (${layout.cardStartRatio.toFixed(3)})`);
     assert.ok(layout.dockIconColorCount >= 3 && layout.dockIconColorCount <= 4, `${label}: paleta do dock não está unificada (${layout.dockIconColorCount} cores)`);
+  } else if (layout.viewport.height > layout.viewport.width) {
+    const emptySpaceRatio = Math.max(0, layout.footer.top - layout.selectedTitle.bottom) / layout.viewport.height;
+    assert.ok(emptySpaceRatio <= .15, `${label}: ainda existe espaço vazio excessivo sob o dock (${(emptySpaceRatio * 100).toFixed(1)}%)`);
   }
   assert.equal(layout.footerChildrenInside, true, `${label}: dicas inferiores foram cortadas (${layout.footerBounds.left.toFixed(1)}–${layout.footerBounds.right.toFixed(1)}; rodapé ${layout.footer.left.toFixed(1)}–${layout.footer.right.toFixed(1)})`);
 }
