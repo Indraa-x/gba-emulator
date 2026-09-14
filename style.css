@@ -14,6 +14,8 @@
   --green: #59d354;
   --display-brightness: 1;
   --ui-font: "Segoe UI", Arial, Helvetica, sans-serif;
+  --transition-fast: 120ms cubic-bezier(.2, .8, .2, 1);
+  --transition-medium: 220ms cubic-bezier(.2, .8, .2, 1);
 }
 
 * {
@@ -193,7 +195,7 @@ button:disabled {
   background: #29292b;
   box-shadow: 0 0 0 .16rem rgba(114, 232, 243, .75), 0 .22rem .7rem rgba(0, 0, 0, .3);
   cursor: pointer;
-  transition: transform .14s ease, box-shadow .14s ease;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .profile-avatar--primary {
@@ -346,7 +348,7 @@ button:disabled {
   background: #30323a;
   box-shadow: 0 .35rem 1rem rgba(0, 0, 0, .24);
   cursor: pointer;
-  transition: transform .12s ease, box-shadow .12s ease, outline-color .12s ease;
+  transition: transform var(--transition-fast), box-shadow var(--transition-medium), outline-color var(--transition-fast);
 }
 
 .software-card:hover,
@@ -360,9 +362,9 @@ button:disabled {
   z-index: 3;
   outline: .25rem solid var(--cyan) !important;
   outline-offset: .2rem;
-  box-shadow: 0 .7rem 1.8rem rgba(0, 0, 0, .3);
-  transform: scale(1.018);
-  animation: card-bop .2s ease both;
+  box-shadow: 0 .85rem 2rem rgba(0, 0, 0, .36);
+  transform: translateY(-.12rem) scale(1.018);
+  animation: card-bop var(--transition-medium) both;
 }
 
 .software-card img,
@@ -512,7 +514,7 @@ button:disabled {
   color: var(--icon-color);
   background: transparent;
   cursor: pointer;
-  transition: color .12s, background .12s, transform .12s;
+  transition: color var(--transition-fast), background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-medium);
 }
 
 .system-button:hover,
@@ -523,7 +525,15 @@ button:disabled {
   box-shadow: 0 .25rem .8rem color-mix(in srgb, var(--icon-color) 42%, transparent);
   outline-color: var(--icon-color) !important;
   transform: translateY(-.1rem) scale(1.07);
-  animation: dock-bop .18s ease both;
+  animation: dock-bop var(--transition-medium) both;
+}
+
+.software-card:active,
+.recent-game:active,
+.system-button:active,
+.quick-grid button:active {
+  transform: translateY(0) scale(.97);
+  transition-duration: 80ms;
 }
 
 .system-button svg {
@@ -759,7 +769,8 @@ button:disabled {
   border-radius: 1.1rem;
   background: rgba(255, 255, 255, .055);
   cursor: pointer;
-  transition: border-color .14s ease, background .14s ease, transform .14s ease;
+  box-shadow: 0 .3rem .8rem rgba(0, 0, 0, .12);
+  transition: border-color var(--transition-fast), background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-medium);
 }
 
 .quick-grid button:hover,
@@ -767,7 +778,8 @@ button:disabled {
 .quick-grid button.gamepad-focus {
   border-color: var(--cyan);
   background: rgba(114, 232, 243, .1);
-  transform: translateY(-.08rem);
+  box-shadow: 0 .65rem 1.25rem rgba(0, 0, 0, .24);
+  transform: translateY(-.1rem);
 }
 
 .quick-grid button span {
@@ -1585,7 +1597,8 @@ input[type="range"] {
 }
 
 @keyframes card-bop {
-  50% { transform: scale(1.032); }
+  0%, 100% { transform: translateY(-.12rem) scale(1.018); }
+  50% { transform: translateY(-.2rem) scale(1.032); }
 }
 
 @keyframes dock-bop {

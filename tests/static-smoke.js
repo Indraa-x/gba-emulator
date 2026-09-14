@@ -178,6 +178,8 @@ for (const filename of javascript) {
 }
 
 assert.match(css, /@media \(max-width: 760px\)[\s\S]*?\.home-content\s*\{[^}]*grid-template-rows:\s*auto minmax\(0, 1fr\) auto/s, "HOME mobile ainda deixa o espaço livre abaixo do dock");
+assert.match(css, /--transition-fast:\s*120ms[^;]+;[\s\S]*?--transition-medium:\s*220ms/, "tokens de movimento consistentes não foram definidos");
+assert.match(css, /\.software-card:active,[\s\S]*?\.quick-grid button:active\s*\{[^}]*scale\(\.97\)/, "feedback tátil de pressionamento não foi aplicado");
 
 assert.ok(fs.existsSync(path.join(root, "vendor", "gbajs", "COPYING")), "licença BSD do núcleo ausente");
 assert.ok(fs.existsSync(path.join(root, "Iniciar Advance Home.cmd")), "inicializador de um clique ausente");
