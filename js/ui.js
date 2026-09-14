@@ -151,7 +151,7 @@
       "selectedGameTitle", "selectedGameMeta", "uiSoundToggle", "profileAvatarButton", "profileAvatarImage",
       "profileDockButton", "profileDialog", "profilePreviewImage", "profileAvatarName", "avatarGrid",
       "quickVolumeRange", "quickVolumeValue", "quickSpeedValue",
-      "quickFilterSelect", "quickUiSoundToggle", "softwareLibrary", "libraryEmptyHint", "libraryPosition"
+      "quickFilterSelect", "quickUiSoundToggle", "softwareLibrary", "libraryEmptyHint"
     ];
     for (const id of ids) refs[id] = byId(id);
     refs.controlKeys = Array.from(document.querySelectorAll(".control-key"));
@@ -706,11 +706,6 @@
     button.classList.add("is-selected");
     refs.selectedGameTitle.textContent = button.dataset.gameTitle || "Jogo";
     refs.selectedGameMeta.textContent = button.dataset.gameMeta || "Game Boy Advance";
-    const cards = Array.from(document.querySelectorAll(".software-strip .software-card"));
-    const position = Math.max(0, cards.indexOf(button)) + 1;
-    const total = Math.max(1, cards.length);
-    refs.libraryPosition.textContent = `${position} / ${total}`;
-    refs.libraryPosition.setAttribute("aria-label", `Jogo ${position} de ${total}`);
   }
 
   function bindSoftwareCard(button) {

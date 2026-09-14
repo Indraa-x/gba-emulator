@@ -141,7 +141,6 @@ async function inspectHome(cdp) {
       footerChildrenInside: footerRects.every((childRect) => childRect.left >= 1 && childRect.right <= innerWidth - 1),
       image: { source: image.getAttribute('src'), width: image.naturalWidth, height: image.naturalHeight },
       title: document.querySelector('#selectedGameTitle').textContent,
-      libraryPosition: document.querySelector('#libraryPosition').textContent,
       outline: { width: parseFloat(style.outlineWidth), offset: parseFloat(style.outlineOffset) },
       selected: card.classList.contains('is-selected')
     };
@@ -154,7 +153,6 @@ function assertHomeLayout(layout, label) {
   assert.equal(layout.profileDockHasImage, false, `${label}: a foto foi duplicada na barra inferior`);
   assert.equal(layout.selected, true, `${label}: a capa principal não iniciou selecionada`);
   assert.equal(layout.title, "Pokémon Emerald", `${label}: título selecionado incorreto`);
-  assert.equal(layout.libraryPosition, "1 / 5", `${label}: indicador inicial do carrossel incorreto`);
   assert.equal(layout.image.source, "capas/PokemonEmeraldBox.jpg", `${label}: a nova capa do Emerald não foi usada`);
   assert.deepEqual([layout.image.width, layout.image.height], [316, 316], `${label}: dimensões da capa do Emerald inesperadas`);
   assert.ok(layout.documentSize.width <= layout.viewport.width, `${label}: página criou rolagem horizontal`);
@@ -203,13 +201,11 @@ async function testLongSelectedTitle(cdp) {
       copy: rect(copy),
       title: rect(title),
       text: title.textContent,
-      position: document.querySelector('#libraryPosition').textContent,
       selectedCode: selected?.dataset.gameCode || ''
     };
   })()`);
   assert.equal(state.selectedCode, "AA2E", "navegação não alcançou a capa do Mario");
   assert.equal(state.text, "Super Mario Advance 2: Super Mario World", "título longo selecionado incorreto");
-  assert.equal(state.position, "4 / 5", "indicador do carrossel não acompanhou a navegação");
   assert.equal(state.scrollX, 0, "navegar pelas capas deslocou a página horizontalmente");
   assert.equal(state.scrollY, 0, "navegar pelas capas deslocou a página verticalmente");
   assert.ok(state.copy.left >= 0 && state.copy.right <= state.viewportWidth, "contêiner do título longo saiu da tela");

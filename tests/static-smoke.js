@@ -46,9 +46,9 @@ assert.match(ui, /function getGameCover\(game\)/, "resolvedor de capas por jogo 
 assert.match(ui, /function createRecentThumbnail\(game\)[\s\S]*?game-cover--fallback[\s\S]*?createElementNS/, "fallback de capa desenhado não foi implementado");
 assert.doesNotMatch(ui.match(/function createRecentThumbnail\(game\)[\s\S]*?\n  }/)[0], /createElement\("canvas"\)|hsl\(|fillText\(/, "fallback de capa ainda usa canvas e cor aleatória");
 assert.match(html, /id="libraryEmptyHint"[^>]*>Arraste uma ROM \.gba aqui ou clique para escolher um arquivo\./, "instrução do estado vazio não foi encontrada");
-assert.match(html, /id="libraryPosition"[^>]*aria-live="polite"/, "indicador acessível do carrossel não foi encontrado");
-assert.match(ui, /refs\.libraryPosition\.textContent = `\$\{position\} \/ \$\{total\}`/, "posição do carrossel não acompanha a seleção");
-assert.match(css, /\.library-position\s*\{[^}]*border-radius:\s*999px[^}]*color:\s*var\(--cyan\)/s, "indicador do carrossel não segue a linguagem visual");
+assert.doesNotMatch(html, /libraryPosition|library-position/, "o contador visual da biblioteca ainda aparece na HOME");
+assert.doesNotMatch(ui, /libraryPosition|`\$\{position\} \/ \$\{total\}`/, "a lógica do contador removido ainda está carregada");
+assert.doesNotMatch(css, /\.library-position/, "o estilo do contador removido ainda está carregado");
 assert.match(ui, /function updateLibraryEmptyState\(gameCount\)[\s\S]*?is-library-empty[\s\S]*?updateLibraryEmptyState\(gameCount\)/, "estado vazio não é aplicado pela biblioteca");
 assert.match(css, /\.home-content\.is-library-empty \.software-card--add\s*\{[^}]*width:\s*clamp\(13rem,[^}]*height:\s*clamp\(13rem/s, "card de primeiro jogo não recebe destaque no estado vazio");
 assert.doesNotMatch(ui, /LeafGreen|leafgreen|pokemon-leafgreen-version_p5c2/, "LeafGreen ainda aparece na HOME");
@@ -60,7 +60,7 @@ assert.doesNotMatch(html, /pokemon-browser\.png/, "a captura da interface antiga
 assert.match(ui, /async function persistImportedGameDetails\(gameInfo\)/, "os detalhes do jogo importado não são persistidos");
 assert.match(ui, /game\.displayTitle = knownCover\?\.title[\s\S]*?game\.cover = knownCover\.src[\s\S]*?database\.put\("games", game\)/, "a capa reconhecida não fica associada ao jogo salvo");
 assert.match(ui, /const result = await emulator\.loadROM\(buffer, file\.name, true\);[\s\S]*?persistImportedGameDetails\(result\)/, "a importação não salva jogo e capa na biblioteca");
-assert.match(html, /id="selectedGameTitle">Adicionar jogo<[\s\S]*?id="selectedGameMeta">Escolha uma ROM \.gba<[\s\S]*?id="libraryPosition"[^>]*>1 \/ 1</, "o estado inicial da HOME ainda anuncia jogos pré-carregados");
+assert.match(html, /id="selectedGameTitle">Adicionar jogo<[\s\S]*?id="selectedGameMeta">Escolha uma ROM \.gba</, "o estado inicial da HOME ainda anuncia jogos pré-carregados");
 assert.match(html, /id="uiSoundToggle"/, "controle dos sons do menu não foi encontrado");
 assert.equal((html.match(/class="profile-avatar profile-avatar--primary"/g) || []).length, 1, "deve existir somente um avatar no canto superior esquerdo");
 assert.match(html, /id="profileDialog"/, "editor de perfil não foi encontrado");
@@ -106,7 +106,8 @@ assert.match(css, /\.selected-software-copy\s*{[^}]*width:\s*min\(68vw,\s*58rem\
 assert.match(css, /\.selected-software-copy p\s*{[^}]*text-overflow:\s*ellipsis[^}]*white-space:\s*nowrap/s, "título longo pode vazar da HOME");
 assert.match(ui, /function revealNavigationTarget\(element\)[\s\S]*?strip\.scrollLeft = Math\.max[\s\S]*?document\.scrollingElement/, "navegação entre jogos ainda pode deslocar a página inteira");
 assert.match(ui, /function pollGamepads\(\)\s*{\s*[\s\S]*?requestAnimationFrame\(pollGamepads\);\s*try\s*{/, "uma falha de interface ainda pode desligar o polling do controle");
-assert.match(html, /js\/ui\.js\?v=7/, "a versão atual da interface não possui invalidação do cache público");
+assert.match(html, /style\.css\?v=6/, "a folha visual atual não possui invalidação do cache público");
+assert.match(html, /js\/ui\.js\?v=8/, "a versão atual da interface não possui invalidação do cache público");
 assert.match(html, /id="screenshotBtn"[^>]*hidden/, "ícone da câmera ainda aparece na barra principal");
 for (const selector of ["controls", "saves", "audio"]) {
   assert.match(css, new RegExp(`\\.system-button\\[data-open-settings="${selector}"\\]\\s*\\{\\s*--icon-color:`), `ícone sem cor própria: ${selector}`);
