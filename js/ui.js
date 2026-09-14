@@ -75,6 +75,9 @@
   let gamepadSignature = "";
   let gamepadDetectionRequested = false;
   let previousMenuButton = false;
+  let gamepadReadWarningShown = false;
+  let gamepadPollWarningShown = false;
+  let gamepadInputSuspended = false;
   let pendingLocalGame = null;
   const gamepadRepeatAt = new Map();
   let lastRomFile = null;
@@ -789,7 +792,15 @@
 
   function getConnectedGamepads() {
     if (typeof navigator.getGamepads !== "function") return [];
-    return Array.from(navigator.getGamepads()).filter(Boolean);
+    try {
+      const gamepads = Array.from(navigator.getGamepads() || []).filter((gamepad) => gamepad && gamepad.connected !== false);
+      gamepadReadWarningShown = false;
+      return gamepads;
+    } catch (error) {
+      if (!gamepadReadWarningShown) console.warn("Não foi possível ler o controle conectado.", error);
+      gamepadReadWarningShown = true;
+      return [];
+    }
   }
 
   function cleanGamepadName(id) {
@@ -915,9 +926,9 @@
   }
 
   function revealNavigationTarget(element) {
-    const strip = element.closest(".software-strip");
+    const strip = element.closest?.(".software-strip");
     if (!strip) {
-      element.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "smooth" });
+      element.scrollIntoView?.({ block: "nearest", inline: "nearest", behavior: "smooth" });
       return;
     }
     const target = element.getBoundingClientRect();
@@ -927,8 +938,14 @@
     let distance = 0;
     if (target.left < viewport.left + focusSpace) distance = target.left - viewport.left - focusSpace;
     else if (target.right > viewport.right - focusSpace) distance = target.right - viewport.right + focusSpace;
-    if (distance) strip.scrollBy({ left: distance, behavior: "smooth" });
-    window.scrollTo(0, 0);
+    // scrollLeft funciona também em navegadores/WebViews que não implementam
+    // Element.scrollBy. Uma exceção aqui não pode derrubar o polling inteiro.
+    if (distance) strip.scrollLeft = Math.max(0, strip.scrollLeft + distance);
+    const page = document.scrollingElement;
+    if (page) {
+      page.scrollLeft = 0;
+      page.scrollTop = 0;
+    }
   }
 
   function focusGamepadTarget(element) {
@@ -1060,49 +1077,57 @@
   }
 
   function pollGamepads() {
-    const gamepads = getConnectedGamepads();
-    updateGamepadDevices(gamepads);
-    const gamepad = getSelectedGamepad(gamepads);
-    const rawInputs = GAMEPAD_BINDINGS.snapshot(gamepad);
-
-    let capturedBinding = false;
-    if (listeningGamepadControl && gamepad) {
-      const binding = GAMEPAD_BINDINGS.firstNewInput(gamepad, previousRawGamepadInputs);
-      if (binding) capturedBinding = finishGamepadListening(binding);
-    }
-
-    const activeControls = new Map();
-    for (const control of GAMEPAD_BINDINGS.CONTROLS) {
-      const pressed = Boolean(gamepad && GAMEPAD_BINDINGS.controlIsActive(gamepad, preferences.gamepadMap[control]));
-      activeControls.set(control, pressed);
-    }
-
-    let navigationMode = gamepadNavigationMode();
-    const menuButton = Boolean(activeControls.get("START"));
-    if (!navigationMode && emulator.romLoaded && menuButton && !previousMenuButton) {
-      emulator.releaseAllKeys();
-      playUISound("open");
-      toggleQuickMenu(true);
-      navigationMode = true;
-      window.setTimeout(focusFirstGamepadTarget, 0);
-    }
-
-    if (navigationMode) {
-      if (!capturedBinding && !listeningGamepadControl) processGamepadNavigation(activeControls);
-    } else {
-      for (const control of GAMEPAD_BINDINGS.CONTROLS) {
-        const pressed = activeControls.get(control) || false;
-        const wasPressed = previousGamepadControls.get(control) || false;
-        if (pressed && !wasPressed) pressControl(control, "gamepad");
-        if (!pressed && wasPressed) releaseControl(control);
-      }
-    }
-
-    previousGamepadControls = activeControls;
-    previousRawGamepadInputs = rawInputs;
-    previousMenuButton = menuButton;
-    document.body.classList.toggle("has-gamepad", Boolean(gamepad));
+    // Agenda o próximo quadro antes de processar a entrada. Assim, uma falha
+    // isolada de foco/rolagem nunca desliga o controle até recarregar a página.
     gamepadFrame = requestAnimationFrame(pollGamepads);
+    try {
+      const gamepads = getConnectedGamepads();
+      updateGamepadDevices(gamepads);
+      const gamepad = getSelectedGamepad(gamepads);
+      const rawInputs = GAMEPAD_BINDINGS.snapshot(gamepad);
+
+      let capturedBinding = false;
+      if (listeningGamepadControl && gamepad) {
+        const binding = GAMEPAD_BINDINGS.firstNewInput(gamepad, previousRawGamepadInputs);
+        if (binding) capturedBinding = finishGamepadListening(binding);
+      }
+
+      const activeControls = new Map();
+      for (const control of GAMEPAD_BINDINGS.CONTROLS) {
+        const pressed = Boolean(gamepad && GAMEPAD_BINDINGS.controlIsActive(gamepad, preferences.gamepadMap[control]));
+        activeControls.set(control, pressed);
+      }
+
+      let navigationMode = gamepadNavigationMode();
+      const menuButton = Boolean(activeControls.get("START"));
+      if (!gamepadInputSuspended && !navigationMode && emulator.romLoaded && menuButton && !previousMenuButton) {
+        emulator.releaseAllKeys();
+        playUISound("open");
+        toggleQuickMenu(true);
+        navigationMode = true;
+        window.setTimeout(focusFirstGamepadTarget, 0);
+      }
+
+      if (!gamepadInputSuspended && navigationMode) {
+        if (!capturedBinding && !listeningGamepadControl) processGamepadNavigation(activeControls);
+      } else if (!gamepadInputSuspended) {
+        for (const control of GAMEPAD_BINDINGS.CONTROLS) {
+          const pressed = activeControls.get(control) || false;
+          const wasPressed = previousGamepadControls.get(control) || false;
+          if (pressed && !wasPressed) pressControl(control, "gamepad");
+          if (!pressed && wasPressed) releaseControl(control);
+        }
+      }
+
+      previousGamepadControls = activeControls;
+      previousRawGamepadInputs = rawInputs;
+      previousMenuButton = menuButton;
+      document.body.classList.toggle("has-gamepad", Boolean(gamepad));
+      gamepadPollWarningShown = false;
+    } catch (error) {
+      if (!gamepadPollWarningShown) console.error("Falha temporária ao processar o controle; a leitura continuará.", error);
+      gamepadPollWarningShown = true;
+    }
   }
 
   function openSettings(tab) {
@@ -1518,9 +1543,14 @@
       button.addEventListener("click", () => showToast("Emulação local · nenhum dado é enviado para a internet."));
     });
     window.addEventListener("blur", () => {
+      gamepadInputSuspended = true;
       emulator.releaseAllKeys();
       refs.controlKeys.forEach((button) => button.classList.remove("pressed"));
       pointerOwners.clear();
+    });
+    window.addEventListener("focus", () => {
+      gamepadInputSuspended = false;
+      resetInputStateAfterRestore();
     });
     window.addEventListener("beforeunload", () => {
       emulator.flushSave();

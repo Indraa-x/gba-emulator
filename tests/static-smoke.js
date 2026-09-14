@@ -12,15 +12,16 @@ const adapter = fs.readFileSync(path.join(root, "js", "gbajs-adapter.js"), "utf8
 const coreAudio = fs.readFileSync(path.join(root, "vendor", "gbajs", "js", "audio.js"), "utf8");
 const css = fs.readFileSync(path.join(root, "style.css"), "utf8");
 const scriptSources = [...html.matchAll(/<script\s+src="([^"]+)"/g)].map((match) => match[1]);
+const scriptPaths = scriptSources.map((source) => source.split(/[?#]/, 1)[0]);
 
 assert.ok(scriptSources.length >= 10, "lista de scripts inesperadamente curta");
-for (const source of scriptSources) {
+for (const [index, source] of scriptSources.entries()) {
   assert.ok(!/^https?:/i.test(source), `dependência externa inesperada: ${source}`);
-  assert.ok(fs.existsSync(path.join(root, source)), `script ausente: ${source}`);
+  assert.ok(fs.existsSync(path.join(root, scriptPaths[index])), `script ausente: ${source}`);
 }
-assert.ok(scriptSources.indexOf("js/emulator.js") < scriptSources.indexOf("vendor/gbajs/js/gba.js"), "ordem incorreta do armazenamento");
-assert.ok(scriptSources.indexOf("vendor/gbajs/js/gba.js") < scriptSources.indexOf("js/gbajs-adapter.js"), "adaptador carregado antes do núcleo");
-assert.equal(scriptSources.at(-1), "js/ui.js", "ui.js deve inicializar por último");
+assert.ok(scriptPaths.indexOf("js/emulator.js") < scriptPaths.indexOf("vendor/gbajs/js/gba.js"), "ordem incorreta do armazenamento");
+assert.ok(scriptPaths.indexOf("vendor/gbajs/js/gba.js") < scriptPaths.indexOf("js/gbajs-adapter.js"), "adaptador carregado antes do núcleo");
+assert.equal(scriptPaths.at(-1), "js/ui.js", "ui.js deve inicializar por último");
 assert.match(html, /class="software-strip"/, "biblioteca horizontal de jogos não foi encontrada");
 assert.match(html, /class="system-dock"/, "barra inferior de funções não foi encontrada");
 assert.match(html, /class="system-dock"[\s\S]*class="selected-software-copy"/, "o nome selecionado deve aparecer abaixo da barra como no Switch 2");
@@ -95,7 +96,9 @@ assert.match(css, /\.system-dock\s*{[^}]*width:\s*min\(68vw,\s*58rem\)[^}]*borde
 assert.match(css, /\.system-dock\s*{[^}]*background:\s*var\(--home-bg\)/s, "barra principal não usa a mesma cor do fundo da interface");
 assert.match(css, /\.selected-software-copy\s*{[^}]*width:\s*min\(68vw,\s*58rem\)[^}]*margin:[^;]*auto[^}]*overflow:\s*hidden/s, "nome do jogo não está alinhado e contido sob a barra principal");
 assert.match(css, /\.selected-software-copy p\s*{[^}]*text-overflow:\s*ellipsis[^}]*white-space:\s*nowrap/s, "título longo pode vazar da HOME");
-assert.match(ui, /function revealNavigationTarget\(element\)[\s\S]*?strip\.scrollBy[\s\S]*?window\.scrollTo\(0, 0\)/, "navegação entre jogos ainda pode deslocar a página inteira");
+assert.match(ui, /function revealNavigationTarget\(element\)[\s\S]*?strip\.scrollLeft = Math\.max[\s\S]*?document\.scrollingElement/, "navegação entre jogos ainda pode deslocar a página inteira");
+assert.match(ui, /function pollGamepads\(\)\s*{\s*[\s\S]*?requestAnimationFrame\(pollGamepads\);\s*try\s*{/, "uma falha de interface ainda pode desligar o polling do controle");
+assert.match(html, /js\/ui\.js\?v=3/, "a correção do controle não possui invalidação do cache público");
 assert.match(html, /id="screenshotBtn"[^>]*hidden/, "ícone da câmera ainda aparece na barra principal");
 for (const selector of ["controls", "saves", "audio"]) {
   assert.match(css, new RegExp(`\\.system-button\\[data-open-settings="${selector}"\\]\\s*\\{\\s*--icon-color:`), `ícone sem cor própria: ${selector}`);

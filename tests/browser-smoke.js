@@ -111,6 +111,12 @@ async function connectCDP(webSocketUrl) {
   };
 }
 
+async function evaluate(cdp, expression) {
+  const result = await cdp.call("Runtime.evaluate", { expression, returnByValue: true, awaitPromise: true });
+  if (result.exceptionDetails) throw new Error(result.exceptionDetails.text || "falha ao avaliar a página");
+  return result.result.value;
+}
+
 async function trustedClick(cdp, selector) {
   const pointResult = await cdp.call("Runtime.evaluate", {
     expression: `(() => {
@@ -290,31 +296,41 @@ async function main() {
     }
     assert.equal(restoredToGame, true, "carregar estado pelo menu nao retornou ao jogo");
 
-    const neutralAfterRestore = await cdp.call("Runtime.evaluate", {
-      expression: "(window.advanceLab.core.keypad.currentDown & 1) !== 0",
-      returnByValue: true
-    });
-    assert.equal(neutralAfterRestore.result.value, true, "o botao A ficou preso depois de carregar o estado");
-    await cdp.call("Runtime.evaluate", {
-      expression: "window.__stateRestoreGamepad.buttons[1].pressed = true; window.__stateRestoreGamepad.buttons[1].value = 1; true",
-      returnByValue: true
-    });
-    await delay(150);
-    const gamepadPressedAfterRestore = await cdp.call("Runtime.evaluate", {
-      expression: "(window.advanceLab.core.keypad.currentDown & 1) === 0",
-      returnByValue: true
-    });
-    assert.equal(gamepadPressedAfterRestore.result.value, true, "controle continuou preso na navegacao do menu depois de carregar o estado");
-    await cdp.call("Runtime.evaluate", {
-      expression: "window.__stateRestoreGamepad.buttons[1].pressed = false; window.__stateRestoreGamepad.buttons[1].value = 0; true",
-      returnByValue: true
-    });
-    await delay(150);
-    const gamepadReleasedAfterRestore = await cdp.call("Runtime.evaluate", {
-      expression: "(window.advanceLab.core.keypad.currentDown & 1) !== 0",
-      returnByValue: true
-    });
-    assert.equal(gamepadReleasedAfterRestore.result.value, true, "controle nao liberou o botao depois de restaurar o estado");
+    const gamepadInputs = [
+      { control: "A", button: 1, bit: 0 }, { control: "B", button: 0, bit: 1 },
+      { control: "SELECT", button: 8, bit: 2 }, { control: "RIGHT", button: 15, bit: 4 },
+      { control: "LEFT", button: 14, bit: 5 }, { control: "UP", button: 12, bit: 6 },
+      { control: "DOWN", button: 13, bit: 7 }, { control: "R", button: 5, bit: 8 },
+      { control: "L", button: 4, bit: 9 }
+    ];
+    assert.equal(await evaluate(cdp, "window.advanceLab.core.keypad.currentDown === 0x03ff"), true, "algum botão ficou preso depois de carregar o estado");
+    for (const input of gamepadInputs) {
+      await evaluate(cdp, `window.__stateRestoreGamepad.buttons[${input.button}].pressed = true; window.__stateRestoreGamepad.buttons[${input.button}].value = 1; true`);
+      await delay(90);
+      assert.equal(
+        await evaluate(cdp, `(window.advanceLab.core.keypad.currentDown & (1 << ${input.bit})) === 0`),
+        true,
+        `${input.control}: controle não pressionou o botão dentro do jogo`
+      );
+      await evaluate(cdp, `window.__stateRestoreGamepad.buttons[${input.button}].pressed = false; window.__stateRestoreGamepad.buttons[${input.button}].value = 0; true`);
+      await delay(90);
+      assert.equal(
+        await evaluate(cdp, `(window.advanceLab.core.keypad.currentDown & (1 << ${input.bit})) !== 0`),
+        true,
+        `${input.control}: controle não liberou o botão dentro do jogo`
+      );
+    }
+
+    await evaluate(cdp, "window.__stateRestoreGamepad.buttons[9].pressed = true; window.__stateRestoreGamepad.buttons[9].value = 1; true");
+    await delay(120);
+    assert.equal(await evaluate(cdp, "document.querySelector('#quickMenu').classList.contains('view--active')"), true, "Start do controle não abriu o menu rápido");
+    await evaluate(cdp, "window.__stateRestoreGamepad.buttons[9].pressed = false; window.__stateRestoreGamepad.buttons[9].value = 0; true");
+    await delay(90);
+    await evaluate(cdp, "window.__stateRestoreGamepad.buttons[0].pressed = true; window.__stateRestoreGamepad.buttons[0].value = 1; true");
+    await delay(90);
+    await evaluate(cdp, "window.__stateRestoreGamepad.buttons[0].pressed = false; window.__stateRestoreGamepad.buttons[0].value = 0; true");
+    await delay(90);
+    assert.equal(await evaluate(cdp, "document.querySelector('#gameView').classList.contains('view--active') && !window.advanceLab.paused"), true, "B do controle não retornou do menu ao jogo");
     await cdp.call("Runtime.evaluate", {
       expression: `(async () => {
         await window.advanceLab.deleteState(6);

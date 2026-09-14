@@ -191,6 +191,45 @@ async function testLongSelectedTitle(cdp) {
   await delay(100);
 }
 
+async function pressFakeGamepadButton(cdp, index) {
+  await evaluate(cdp, `window.__gamepadSmoke.setButton(${index}, true); true`);
+  await delay(110);
+  await evaluate(cdp, `window.__gamepadSmoke.setButton(${index}, false); true`);
+  await delay(110);
+}
+
+async function testGamepadRecovery(cdp) {
+  await cdp.call("Emulation.setDeviceMetricsOverride", { width: 640, height: 720, deviceScaleFactor: 1, mobile: false });
+  await evaluate(cdp, `(() => {
+    window.__gamepadSmoke.connect();
+    const first = document.querySelector('.software-card--pokemon');
+    first.focus({ preventScroll: true });
+    const strip = document.querySelector('.software-strip');
+    Object.defineProperty(strip, 'scrollBy', { configurable: true, value: undefined });
+    return true;
+  })()`);
+  await delay(180);
+  assert.equal(await evaluate(cdp, `document.body.classList.contains('has-gamepad')`), true, "controle simulado não foi detectado");
+
+  for (let step = 0; step < 4; step++) await pressFakeGamepadButton(cdp, 15);
+  await evaluate(cdp, `delete document.querySelector('.software-strip').scrollBy; true`);
+  const beforeRecovery = await evaluate(cdp, `document.activeElement?.id || document.activeElement?.dataset.gameCode || ''`);
+  await pressFakeGamepadButton(cdp, 14);
+  const afterRecovery = await evaluate(cdp, `document.activeElement?.id || document.activeElement?.dataset.gameCode || ''`);
+  assert.equal(beforeRecovery, "dropZone", "direcional direito não alcançou Adicionar jogo");
+  assert.equal(afterRecovery, "AA2E", "polling do controle parou após navegar pela lista");
+
+  await evaluate(cdp, `document.querySelector('#profileAvatarButton').focus({ preventScroll: true }); true`);
+  await pressFakeGamepadButton(cdp, 1);
+  assert.equal(await evaluate(cdp, `document.querySelector('#profileDialog').open`), true, "botão A não abriu o perfil");
+  await pressFakeGamepadButton(cdp, 0);
+  assert.equal(await evaluate(cdp, `document.querySelector('#profileDialog').open`), false, "botão B não fechou o perfil");
+
+  await evaluate(cdp, `window.__gamepadSmoke.disconnect(); document.querySelector('.software-card--pokemon').focus({ preventScroll: true }); true`);
+  await delay(120);
+  await cdp.call("Emulation.setDeviceMetricsOverride", { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
+}
+
 async function capture(cdp, filename) {
   const screenshot = await cdp.call("Page.captureScreenshot", { format: "png", fromSurface: true, captureBeyondViewport: false });
   fs.writeFileSync(path.join(__dirname, filename), Buffer.from(screenshot.data, "base64"));
@@ -731,7 +770,27 @@ async function main() {
     await cdp.call("Runtime.enable");
     await cdp.call("Page.enable");
     await cdp.call("Page.addScriptToEvaluateOnNewDocument", {
-      source: "Object.defineProperty(Navigator.prototype, 'getGamepads', { configurable: true, value: () => [] }); window.addEventListener('gamepadconnected', (event) => event.stopImmediatePropagation(), true);"
+      source: `(() => {
+        const state = { connected: false };
+        const buttons = Array.from({ length: 16 }, () => ({ pressed: false, touched: false, value: 0 }));
+        const gamepad = { index: 0, id: 'Generic Bluetooth regression pad', mapping: 'standard', connected: false, timestamp: 0, buttons, axes: [0, 0, 0, 0] };
+        const dispatch = (type) => {
+          const event = new Event(type);
+          Object.defineProperty(event, 'gamepad', { value: gamepad });
+          window.dispatchEvent(event);
+        };
+        window.__gamepadSmoke = {
+          gamepad,
+          connect() { state.connected = true; gamepad.connected = true; dispatch('gamepadconnected'); },
+          disconnect() { state.connected = false; gamepad.connected = false; dispatch('gamepaddisconnected'); },
+          setButton(index, pressed) {
+            buttons[index].pressed = Boolean(pressed);
+            buttons[index].value = pressed ? 1 : 0;
+            gamepad.timestamp = performance.now();
+          }
+        };
+        Object.defineProperty(Navigator.prototype, 'getGamepads', { configurable: true, value: () => state.connected ? [gamepad] : [] });
+      })();`
     });
 
     await cdp.call("Emulation.setDeviceMetricsOverride", { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
@@ -741,6 +800,7 @@ async function main() {
     assertHomeLayout(desktop, "desktop");
     await capture(cdp, "home-layout-desktop.png");
     await testLongSelectedTitle(cdp);
+    await testGamepadRecovery(cdp);
     await testCustomCovers(cdp);
     await testAvatarPicker(cdp);
     await testFullscreenEdges(cdp);
