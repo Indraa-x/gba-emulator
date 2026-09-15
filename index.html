@@ -8,7 +8,7 @@
   <meta name="apple-mobile-web-app-title" content="GBAOne">
   <meta name="description" content="GBAOne é um emulador de Game Boy Advance local com biblioteca inspirada em consoles modernos.">
   <title>GBAOne</title>
-  <link rel="stylesheet" href="style.css?v=8">
+  <link rel="stylesheet" href="style.css?v=9">
 </head>
 <body>
   <a class="skip-link" href="#softwareLibrary">Ir para os jogos</a>
@@ -116,7 +116,7 @@
         </div>
         <div class="rotate-device-hint" role="status">
           <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="10" y="5" width="12" height="22" rx="2"/><path d="M5 12a12 12 0 0 0 5 14M5 12l-2 4m2-4 4 1M27 20a12 12 0 0 0-5-14m5 14 2-4m-2 4-4-1"/></svg>
-          <span>Gire o aparelho para jogar</span>
+          <span>Gire para a tela vertical</span>
         </div>
       </div>
     </section>
@@ -234,8 +234,8 @@
             <label class="setting-row"><span><strong>Filtro de imagem</strong><small>Escolha como os pixels são exibidos.</small></span><select id="filterSelect"><option value="pixelated">Pixelado</option><option value="smooth">Suave</option><option value="lcd">Grade LCD</option></select></label>
             <label class="setting-row setting-row--range"><span><strong>Brilho</strong><small id="brightnessValue">100%</small></span><input id="brightnessRange" type="range" min="55" max="135" value="100"></label>
             <div class="section-label">Celular e tablet</div>
-            <label class="setting-row setting-row--range"><span><strong>Opacidade dos botões</strong><small id="touchOpacityValue">82%</small></span><input id="touchOpacityRange" type="range" min="55" max="95" value="82"></label>
-            <label class="setting-row"><span><strong>Tamanho dos botões</strong><small>Controles exibidos ao jogar com a tela deitada.</small></span><select id="touchScaleSelect"><option value="88">Compacto</option><option value="100" selected>Confortável</option><option value="112">Grande</option></select></label>
+            <label class="setting-row setting-row--range"><span><strong>Opacidade dos botões</strong><small id="touchOpacityValue">90%</small></span><input id="touchOpacityRange" type="range" min="65" max="100" value="90"></label>
+            <label class="setting-row"><span><strong>Tamanho dos botões</strong><small>Controles exibidos abaixo do jogo no modo vertical.</small></span><select id="touchScaleSelect"><option value="88">Compacto</option><option value="100" selected>Confortável</option><option value="112">Grande</option></select></label>
           </section>
 
           <section id="panelAudio" class="settings-panel" data-panel="audio" role="tabpanel" aria-labelledby="tabAudio">
@@ -329,6 +329,6 @@
   <script src="vendor/gbajs/js/gba.js"></script>
   <script src="js/gbajs-adapter.js"></script>
   <script src="js/gamepad.js?v=3"></script>
-  <script src="js/ui.js?v=11"></script>
+  <script src="js/ui.js?v=12"></script>
 </body>
 </html>

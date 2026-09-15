@@ -97,7 +97,7 @@
     theme: "indigo",
     filter: "pixelated",
     brightness: 100,
-    touchOpacity: 82,
+    touchOpacity: 90,
     touchScale: 100,
     volume: 70,
     uiSounds: true,
@@ -198,7 +198,7 @@
         ...defaults,
         ...stored,
         theme: THEMES.has(stored.theme) ? stored.theme : defaults.theme,
-        touchOpacity: Number.isFinite(touchOpacity) ? Math.max(55, Math.min(95, touchOpacity)) : defaults.touchOpacity,
+        touchOpacity: Number.isFinite(touchOpacity) ? Math.max(65, Math.min(100, touchOpacity)) : defaults.touchOpacity,
         touchScale: TOUCH_CONTROL_SCALES.has(touchScale) ? touchScale : defaults.touchScale,
         profileAvatar: PROFILE_AVATARS.some((avatar) => avatar.id === stored.profileAvatar) ? stored.profileAvatar : defaults.profileAvatar,
         keyMap: { ...DEFAULT_KEYS, ...(stored.keyMap || {}) },
@@ -1454,23 +1454,8 @@
 
   async function toggleFullscreen() {
     try {
-      if (document.fullscreenElement) {
-        await document.exitFullscreen();
-        try {
-          window.screen.orientation?.unlock?.();
-        } catch (_) {
-          // Some browsers do not expose orientation control.
-        }
-      } else {
-        await refs.console.requestFullscreen({ navigationUI: "hide" });
-        if (document.documentElement.classList.contains("has-touch") && typeof window.screen.orientation?.lock === "function") {
-          try {
-            await window.screen.orientation.lock("landscape");
-          } catch (_) {
-            // Fullscreen still works when orientation locking is unavailable.
-          }
-        }
-      }
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else await refs.console.requestFullscreen({ navigationUI: "hide" });
     } catch (_) {
       showToast("Tela cheia não está disponível neste navegador.", true);
     }
@@ -1707,6 +1692,11 @@
     window.addEventListener("focus", () => {
       gamepadInputSuspended = false;
       resetInputStateAfterRestore();
+    });
+    window.addEventListener("orientationchange", () => {
+      emulator.releaseAllKeys();
+      pointerOwners.clear();
+      refs.controlKeys.forEach((button) => button.classList.remove("pressed"));
     });
     window.addEventListener("beforeunload", () => {
       emulator.flushSave();

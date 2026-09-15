@@ -25,8 +25,11 @@ assert.match(html, /id="touchMenuBtn"[^>]*aria-label="Select: abrir menu rápido
 assert.doesNotMatch(html, /id="touchMenuBtn"[^>]*data-key="SELECT"/, "Select virtual ainda é enviado ao jogo em vez de abrir o menu");
 assert.match(ui, /touchMenuBtn\.addEventListener\("click"[\s\S]*?releaseAllKeys\(\)[\s\S]*?toggleQuickMenu\(true\)/, "Select virtual não limpa os botões antes de abrir o menu");
 assert.match(ui, /navigator\.maxTouchPoints[\s\S]*?classList\.toggle\("has-touch", hasTouch\)/, "detecção de celular e tablet não foi instalada");
-assert.match(ui, /screen\.orientation\.lock\("landscape"\)/, "tela cheia móvel não tenta manter a orientação horizontal");
-assert.match(css, /@media \(orientation: landscape\) and \(max-width: 1400px\)[\s\S]*?html\.has-touch \.game-view\.view--active \.touch-controller\s*\{[^}]*display:\s*block/s, "controle virtual não aparece em paisagem");
+assert.doesNotMatch(ui, /screen\.orientation\.lock\("landscape"\)/, "a versão móvel ainda força o modo paisagem antigo");
+assert.match(html, /Gire para a tela vertical/, "a orientação vertical não é indicada ao usuário");
+assert.match(css, /@media \(orientation: portrait\) and \(max-width: 1100px\)[\s\S]*?html\.has-touch \.game-view\.view--active \.touch-controller\s*\{[^}]*display:\s*block[^}]*position:\s*relative/s, "painel portátil não aparece abaixo do jogo no modo vertical");
+assert.match(css, /html\.has-touch #screen\s*\{[^}]*width:\s*100vw[^}]*height:\s*66\.6667vw[^}]*flex:\s*0 0 auto/s, "tela móvel não mantém 3:2 no topo do aparelho");
+assert.match(css, /html\.has-touch \.game-view\.view--active \.touch-controller\s*\{[^}]*flex:\s*1 1 auto[^}]*#0b0c0f/s, "painel móvel não ocupa o espaço restante com fundo preto");
 assert.match(css, /html\.has-touch \.game-display\s*\{[^}]*touch-action:\s*none/s, "gestos do navegador ainda podem interromper os controles móveis");
 assert.match(css, /\.touch-key\s*\{[^}]*min-width:\s*2\.75rem[^}]*touch-action:\s*none/s, "áreas de toque não têm tamanho mínimo confortável");
 assert.match(css, /env\(safe-area-inset-(?:left|right|bottom|top)\)/, "controle móvel não respeita recortes e bordas seguras");
@@ -137,8 +140,8 @@ assert.match(css, /\.selected-software-copy\s*{[^}]*width:\s*min\(68vw,\s*58rem\
 assert.match(css, /\.selected-software-copy p\s*{[^}]*text-overflow:\s*ellipsis[^}]*white-space:\s*nowrap/s, "título longo pode vazar da HOME");
 assert.match(ui, /function revealNavigationTarget\(element\)[\s\S]*?strip\.scrollLeft = Math\.max[\s\S]*?document\.scrollingElement/, "navegação entre jogos ainda pode deslocar a página inteira");
 assert.match(ui, /function pollGamepads\(\)\s*{\s*[\s\S]*?requestAnimationFrame\(pollGamepads\);\s*try\s*{/, "uma falha de interface ainda pode desligar o polling do controle");
-assert.match(html, /style\.css\?v=8/, "a folha visual atual não possui invalidação do cache público");
-assert.match(html, /js\/ui\.js\?v=11/, "a versão atual da interface não possui invalidação do cache público");
+assert.match(html, /style\.css\?v=9/, "a folha visual atual não possui invalidação do cache público");
+assert.match(html, /js\/ui\.js\?v=12/, "a versão atual da interface não possui invalidação do cache público");
 assert.match(html, /id="screenshotBtn"[^>]*hidden/, "ícone da câmera ainda aparece na barra principal");
 for (const selector of ["controls", "saves", "audio"]) {
   assert.match(css, new RegExp(`\\.system-button\\[data-open-settings="${selector}"\\]\\s*\\{\\s*--icon-color:`), `ícone sem cor própria: ${selector}`);

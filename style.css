@@ -14,7 +14,7 @@
   --red: #ff6872;
   --green: #59d354;
   --display-brightness: 1;
-  --touch-control-opacity: .82;
+  --touch-control-opacity: .9;
   --touch-control-scale: 1;
   --ui-font: "Segoe UI", Arial, Helvetica, sans-serif;
   --display-font: ui-rounded, "Segoe UI Variable Display", "Segoe UI", Arial, sans-serif;
@@ -2394,36 +2394,106 @@ input[type="range"] {
   }
 }
 
-@media (orientation: portrait) and (max-width: 900px) {
-  html.has-touch .game-view.view--active .rotate-device-hint {
-    display: flex;
-  }
-}
-
-@media (orientation: landscape) and (max-width: 1400px) {
+@media (orientation: portrait) and (max-width: 1100px) {
   html.has-touch .game-display {
+    display: flex;
+    padding-top: env(safe-area-inset-top);
+    align-items: stretch;
+    flex-direction: column;
+    justify-content: flex-start;
     overscroll-behavior: none;
     touch-action: none;
   }
 
+  html.has-touch #screen {
+    position: relative;
+    z-index: 2;
+    width: 100vw;
+    height: 66.6667vw;
+    max-width: 100vw;
+    max-height: none;
+    flex: 0 0 auto;
+    align-self: center;
+    box-shadow: 0 .65rem 1.7rem rgba(0, 0, 0, .48);
+  }
+
   html.has-touch .game-view.view--active .touch-controller {
     display: block;
+    position: relative;
+    inset: auto;
+    width: 100%;
+    min-height: 0;
+    flex: 1 1 auto;
+    border-top: 1px solid rgba(255, 255, 255, .055);
+    background:
+      radial-gradient(circle at 18% 58%, rgba(114, 232, 243, .045), transparent 11rem),
+      radial-gradient(circle at 82% 58%, rgba(185, 173, 255, .04), transparent 10rem),
+      #0b0c0f;
   }
-}
 
-@media (orientation: landscape) and (max-height: 420px) {
   .touch-controller {
-    --touch-key-size: clamp(2.65rem, 11.2vh, 3.15rem);
-    --touch-action-size: clamp(2.85rem, 12vh, 3.35rem);
+    --touch-key-size: clamp(3.15rem, 15.7vw, 4.5rem);
+    --touch-action-size: clamp(3.35rem, 16vw, 4.7rem);
   }
 
   .touch-key--shoulder {
-    top: max(.45rem, calc(env(safe-area-inset-top) + .2rem));
-    height: clamp(2.3rem, 9vh, 2.75rem);
+    top: clamp(.75rem, 2.2dvh, 1.15rem);
+    width: clamp(5.9rem, 29vw, 8.5rem);
+    height: clamp(2.65rem, 6.8dvh, 3.4rem);
+  }
+
+  .touch-key--l {
+    left: max(1rem, calc(env(safe-area-inset-left) + .7rem));
+  }
+
+  .touch-key--r {
+    right: max(1rem, calc(env(safe-area-inset-right) + .7rem));
+  }
+
+  .touch-dpad {
+    top: 45%;
+    bottom: auto;
+    left: max(1rem, calc(env(safe-area-inset-left) + .65rem));
+    transform: translateY(-50%);
+    transform-origin: left center;
+  }
+
+  .touch-actions {
+    top: 45%;
+    right: max(1.05rem, calc(env(safe-area-inset-right) + .7rem));
+    bottom: auto;
+    transform: translateY(-50%);
+    transform-origin: right center;
   }
 
   .touch-system {
-    bottom: max(.38rem, calc(env(safe-area-inset-bottom) + .18rem));
+    bottom: max(1rem, calc(env(safe-area-inset-bottom) + .75rem));
+  }
+
+  .touch-key--system {
+    min-width: clamp(4.15rem, 20vw, 6rem);
+    min-height: clamp(2.25rem, 5.8dvh, 2.8rem);
+  }
+}
+
+@media (orientation: portrait) and (max-height: 650px) {
+  html.has-touch #screen {
+    width: min(100vw, 60dvh);
+    height: min(66.6667vw, 40dvh);
+  }
+
+  .touch-dpad,
+  .touch-actions {
+    top: 48%;
+  }
+}
+
+@media (orientation: landscape) and (max-width: 1400px) {
+  html.has-touch .game-view.view--active .rotate-device-hint {
+    display: flex;
+    right: 50%;
+    bottom: 50%;
+    transform: translate(50%, 50%);
   }
 }
 
