@@ -8,7 +8,7 @@
   <meta name="apple-mobile-web-app-title" content="GBAOne">
   <meta name="description" content="GBAOne é um emulador de Game Boy Advance local com biblioteca inspirada em consoles modernos.">
   <title>GBAOne</title>
-  <link rel="stylesheet" href="style.css?v=7">
+  <link rel="stylesheet" href="style.css?v=8">
 </head>
 <body>
   <a class="skip-link" href="#softwareLibrary">Ir para os jogos</a>
@@ -92,6 +92,32 @@
         <canvas id="screen" width="240" height="160" aria-label="Tela do jogo"></canvas>
         <div id="gameHud" class="game-hud is-hidden"><span id="gameTitle">SEM CARTUCHO</span><span id="fpsCounter">0 FPS</span></div>
         <button id="quickMenuBtn" class="quick-trigger" type="button" aria-label="Abrir menu rápido">Menu</button>
+        <div id="touchController" class="touch-controller" role="group" aria-label="Controles virtuais">
+          <button class="touch-key touch-key--shoulder touch-key--l control-key" type="button" data-key="L" aria-label="Botão L">L</button>
+          <button class="touch-key touch-key--shoulder touch-key--r control-key" type="button" data-key="R" aria-label="Botão R">R</button>
+
+          <div class="touch-dpad" role="group" aria-label="Direcional">
+            <button class="touch-key touch-direction touch-direction--up control-key" type="button" data-key="UP" aria-label="Cima"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 7-5.5 7h11L12 7Z"/></svg></button>
+            <button class="touch-key touch-direction touch-direction--left control-key" type="button" data-key="LEFT" aria-label="Esquerda"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 12 7-5.5v11L7 12Z"/></svg></button>
+            <span class="touch-dpad__center" aria-hidden="true"></span>
+            <button class="touch-key touch-direction touch-direction--right control-key" type="button" data-key="RIGHT" aria-label="Direita"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m17 12-7-5.5v11l7-5.5Z"/></svg></button>
+            <button class="touch-key touch-direction touch-direction--down control-key" type="button" data-key="DOWN" aria-label="Baixo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 17 5.5-7h-11l5.5 7Z"/></svg></button>
+          </div>
+
+          <div class="touch-actions" role="group" aria-label="Botões de ação">
+            <button class="touch-key touch-key--action touch-key--b control-key" type="button" data-key="B" aria-label="Botão B">B</button>
+            <button class="touch-key touch-key--action touch-key--a control-key" type="button" data-key="A" aria-label="Botão A">A</button>
+          </div>
+
+          <div class="touch-system" role="group" aria-label="Start e menu">
+            <button id="touchMenuBtn" class="touch-key touch-key--system" type="button" aria-label="Select: abrir menu rápido"><span>SELECT</span><small>MENU</small></button>
+            <button class="touch-key touch-key--system control-key" type="button" data-key="START" aria-label="Start"><span>START</span></button>
+          </div>
+        </div>
+        <div class="rotate-device-hint" role="status">
+          <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="10" y="5" width="12" height="22" rx="2"/><path d="M5 12a12 12 0 0 0 5 14M5 12l-2 4m2-4 4 1M27 20a12 12 0 0 0-5-14m5 14 2-4m-2 4-4-1"/></svg>
+          <span>Gire o aparelho para jogar</span>
+        </div>
       </div>
     </section>
 
@@ -207,6 +233,9 @@
             <label class="setting-row"><span><strong>Cor da interface</strong><small>Escolha o acento visual dos menus.</small></span><select id="themeSelect"><option value="indigo">Ciano</option><option value="coral">Coral</option></select></label>
             <label class="setting-row"><span><strong>Filtro de imagem</strong><small>Escolha como os pixels são exibidos.</small></span><select id="filterSelect"><option value="pixelated">Pixelado</option><option value="smooth">Suave</option><option value="lcd">Grade LCD</option></select></label>
             <label class="setting-row setting-row--range"><span><strong>Brilho</strong><small id="brightnessValue">100%</small></span><input id="brightnessRange" type="range" min="55" max="135" value="100"></label>
+            <div class="section-label">Celular e tablet</div>
+            <label class="setting-row setting-row--range"><span><strong>Opacidade dos botões</strong><small id="touchOpacityValue">82%</small></span><input id="touchOpacityRange" type="range" min="55" max="95" value="82"></label>
+            <label class="setting-row"><span><strong>Tamanho dos botões</strong><small>Controles exibidos ao jogar com a tela deitada.</small></span><select id="touchScaleSelect"><option value="88">Compacto</option><option value="100" selected>Confortável</option><option value="112">Grande</option></select></label>
           </section>
 
           <section id="panelAudio" class="settings-panel" data-panel="audio" role="tabpanel" aria-labelledby="tabAudio">
@@ -300,6 +329,6 @@
   <script src="vendor/gbajs/js/gba.js"></script>
   <script src="js/gbajs-adapter.js"></script>
   <script src="js/gamepad.js?v=3"></script>
-  <script src="js/ui.js?v=10"></script>
+  <script src="js/ui.js?v=11"></script>
 </body>
 </html>

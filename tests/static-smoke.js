@@ -16,6 +16,26 @@ const localServer = fs.readFileSync(path.join(root, "local-server.js"), "utf8");
 const scriptSources = [...html.matchAll(/<script\s+src="([^"]+)"/g)].map((match) => match[1]);
 const scriptPaths = scriptSources.map((source) => source.split(/[?#]/, 1)[0]);
 
+assert.match(html, /id="touchController"[^>]*aria-label="Controles virtuais"/, "controle virtual móvel não foi encontrado");
+assert.equal((html.match(/class="[^"]*\btouch-key\b[^"]*"/g) || []).length, 10, "o controle móvel deve ter 10 botões de toque");
+for (const control of ["UP", "DOWN", "LEFT", "RIGHT", "A", "B", "L", "R", "START"]) {
+  assert.match(html, new RegExp(`class="[^"]*control-key[^"]*"[^>]*data-key="${control}"`), `botão móvel ausente: ${control}`);
+}
+assert.match(html, /id="touchMenuBtn"[^>]*aria-label="Select: abrir menu rápido"/, "Select virtual não abre o menu rápido");
+assert.doesNotMatch(html, /id="touchMenuBtn"[^>]*data-key="SELECT"/, "Select virtual ainda é enviado ao jogo em vez de abrir o menu");
+assert.match(ui, /touchMenuBtn\.addEventListener\("click"[\s\S]*?releaseAllKeys\(\)[\s\S]*?toggleQuickMenu\(true\)/, "Select virtual não limpa os botões antes de abrir o menu");
+assert.match(ui, /navigator\.maxTouchPoints[\s\S]*?classList\.toggle\("has-touch", hasTouch\)/, "detecção de celular e tablet não foi instalada");
+assert.match(ui, /screen\.orientation\.lock\("landscape"\)/, "tela cheia móvel não tenta manter a orientação horizontal");
+assert.match(css, /@media \(orientation: landscape\) and \(max-width: 1400px\)[\s\S]*?html\.has-touch \.game-view\.view--active \.touch-controller\s*\{[^}]*display:\s*block/s, "controle virtual não aparece em paisagem");
+assert.match(css, /html\.has-touch \.game-display\s*\{[^}]*touch-action:\s*none/s, "gestos do navegador ainda podem interromper os controles móveis");
+assert.match(css, /\.touch-key\s*\{[^}]*min-width:\s*2\.75rem[^}]*touch-action:\s*none/s, "áreas de toque não têm tamanho mínimo confortável");
+assert.match(css, /env\(safe-area-inset-(?:left|right|bottom|top)\)/, "controle móvel não respeita recortes e bordas seguras");
+for (const id of ["touchOpacityRange", "touchOpacityValue", "touchScaleSelect"]) {
+  assert.match(html, new RegExp(`id="${id}"`), `ajuste móvel ausente: ${id}`);
+}
+assert.match(ui, /--touch-control-opacity[\s\S]*?touchOpacityRange\.addEventListener\("input"/, "opacidade dos controles móveis não é aplicada em tempo real");
+assert.match(ui, /--touch-control-scale[\s\S]*?touchScaleSelect\.addEventListener\("change"/, "tamanho dos controles móveis não é configurável");
+
 assert.ok(scriptSources.length >= 10, "lista de scripts inesperadamente curta");
 for (const [index, source] of scriptSources.entries()) {
   assert.ok(!/^https?:/i.test(source), `dependência externa inesperada: ${source}`);
@@ -117,8 +137,8 @@ assert.match(css, /\.selected-software-copy\s*{[^}]*width:\s*min\(68vw,\s*58rem\
 assert.match(css, /\.selected-software-copy p\s*{[^}]*text-overflow:\s*ellipsis[^}]*white-space:\s*nowrap/s, "título longo pode vazar da HOME");
 assert.match(ui, /function revealNavigationTarget\(element\)[\s\S]*?strip\.scrollLeft = Math\.max[\s\S]*?document\.scrollingElement/, "navegação entre jogos ainda pode deslocar a página inteira");
 assert.match(ui, /function pollGamepads\(\)\s*{\s*[\s\S]*?requestAnimationFrame\(pollGamepads\);\s*try\s*{/, "uma falha de interface ainda pode desligar o polling do controle");
-assert.match(html, /style\.css\?v=7/, "a folha visual atual não possui invalidação do cache público");
-assert.match(html, /js\/ui\.js\?v=10/, "a versão atual da interface não possui invalidação do cache público");
+assert.match(html, /style\.css\?v=8/, "a folha visual atual não possui invalidação do cache público");
+assert.match(html, /js\/ui\.js\?v=11/, "a versão atual da interface não possui invalidação do cache público");
 assert.match(html, /id="screenshotBtn"[^>]*hidden/, "ícone da câmera ainda aparece na barra principal");
 for (const selector of ["controls", "saves", "audio"]) {
   assert.match(css, new RegExp(`\\.system-button\\[data-open-settings="${selector}"\\]\\s*\\{\\s*--icon-color:`), `ícone sem cor própria: ${selector}`);

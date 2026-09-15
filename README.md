@@ -56,6 +56,7 @@
 | Menu rápido com volume, filtro e tela cheia | Cinco save states independentes por jogo |
 | Teclado e gamepad totalmente remapeáveis | Áudio PSG e Direct Sound com controle por canal |
 | Controles Bluetooth ou USB pela Gamepad API | Pokémon em 2×; Zelda e Mario em 1× |
+| Controle virtual em paisagem para celular e tablet | Multitouch, vibração e áreas seguras para notch |
 | Temas Ciano e Coral e 10 avatares em pixel art | Sem upload de ROMs, saves ou estados |
 
 Os sons da interface são originais e sintetizados localmente pela Web Audio API. Eles podem ser desligados em **Configurações → Áudio → Sons do menu**.
@@ -95,6 +96,8 @@ Abrir `index.html` diretamente por `file://` não permite que o navegador leia a
 | Menu rápido | Shift esquerdo (Select) ou Esc |
 
 Na interface, use o direcional ou analógico para navegar, **A** para confirmar, **B** para voltar e **L/R** para trocar abas. Durante o jogo, **Select** abre o menu rápido e **Start** permanece dedicado ao jogo. Todos os botões podem ser alterados em **Configurações → Controles**.
+
+No celular ou tablet, jogue com o aparelho deitado: o direcional, A/B, L/R, Start e Select aparecem sobre a tela com áreas de toque grandes. O **Select** virtual abre o menu rápido, e a transparência e o tamanho dos botões podem ser ajustados em **Configurações → Tela**. Ao entrar em tela cheia, o GBAOne tenta manter a orientação horizontal quando o navegador permite.
 
 ## Arquitetura
 

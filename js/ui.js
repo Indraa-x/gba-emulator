@@ -24,6 +24,7 @@
     Object.freeze({ codePrefix: "AA2", title: "Super Mario Advance 2: Super Mario World", names: ["super mario advance 2", "super mario world"], src: "capas/MV5BMDY1ZmVkMmQtOWY0Ni00NjZlLTg5NjktYjZhY2YzNTZmYjljXkEyXkFqcGc@._V1_.jpg" })
   ]);
   const THEMES = new Set(["indigo", "coral"]);
+  const TOUCH_CONTROL_SCALES = new Set([88, 100, 112]);
   const UI_SOUND_PROFILES = Object.freeze({
     move: Object.freeze({
       cooldown: 46,
@@ -96,6 +97,8 @@
     theme: "indigo",
     filter: "pixelated",
     brightness: 100,
+    touchOpacity: 82,
+    touchScale: 100,
     volume: 70,
     uiSounds: true,
     showFps: true,
@@ -147,6 +150,7 @@
       "fpsCounter", "quickMenuBtn", "quickMenu", "loadingOverlay", "loadingText", "dropZone", "romInput",
       "recentList", "settingsDialog", "keyMap", "resetKeysBtn", "filterSelect", "themeSelect",
       "brightnessRange", "brightnessValue", "fpsToggle", "volumeRange", "volumeValue", "channelToggles",
+      "touchController", "touchMenuBtn", "touchOpacityRange", "touchOpacityValue", "touchScaleSelect",
       "saveSlots",
       "gamepadCard", "gamepadStatusDot", "gamepadStatus", "gamepadDetail", "gamepadBadge", "bluetoothSettingsBtn",
       "detectGamepadBtn", "gamepadSelect", "gamepadMap", "resetGamepadBtn", "toastRegion", "systemClock",
@@ -181,6 +185,8 @@
       const stored = JSON.parse(currentPreferences || legacyPreferences || "null");
       if (!stored) return defaults;
       const gamepadMap = GAMEPAD_BINDINGS.sanitize(stored.gamepadMap);
+      const touchOpacity = Number(stored.touchOpacity);
+      const touchScale = Number(stored.touchScale);
       const legacyAB = !stored.gamepadMapVersion
         && gamepadMap.A.length === 1 && gamepadMap.A[0].type === "button" && gamepadMap.A[0].index === 0
         && gamepadMap.B.length === 1 && gamepadMap.B[0].type === "button" && gamepadMap.B[0].index === 1;
@@ -192,6 +198,8 @@
         ...defaults,
         ...stored,
         theme: THEMES.has(stored.theme) ? stored.theme : defaults.theme,
+        touchOpacity: Number.isFinite(touchOpacity) ? Math.max(55, Math.min(95, touchOpacity)) : defaults.touchOpacity,
+        touchScale: TOUCH_CONTROL_SCALES.has(touchScale) ? touchScale : defaults.touchScale,
         profileAvatar: PROFILE_AVATARS.some((avatar) => avatar.id === stored.profileAvatar) ? stored.profileAvatar : defaults.profileAvatar,
         keyMap: { ...DEFAULT_KEYS, ...(stored.keyMap || {}) },
         gamepadMap,
@@ -291,6 +299,11 @@
     document.documentElement.style.setProperty("--display-brightness", preferences.brightness / 100);
     refs.brightnessRange.value = preferences.brightness;
     refs.brightnessValue.textContent = `${preferences.brightness}%`;
+    document.documentElement.style.setProperty("--touch-control-opacity", (preferences.touchOpacity / 100).toFixed(2));
+    document.documentElement.style.setProperty("--touch-control-scale", (preferences.touchScale / 100).toFixed(2));
+    refs.touchOpacityRange.value = preferences.touchOpacity;
+    refs.touchOpacityValue.textContent = `${preferences.touchOpacity}%`;
+    refs.touchScaleSelect.value = String(preferences.touchScale);
     refs.fpsToggle.checked = preferences.showFps;
     refs.gameHud.classList.toggle("is-hidden", !preferences.showFps);
     refs.volumeRange.value = preferences.volume;
@@ -467,7 +480,7 @@
   function soundForTarget(element) {
     if (element?.matches(".software-card, .recent-game")) return "launch";
     if (element?.matches(".close-button, [data-quick='home']")) return "back";
-    if (element?.matches("#settingsBtn, [data-open-settings], #profileAvatarButton, #profileDockButton")) return "open";
+    if (element?.matches("#settingsBtn, [data-open-settings], #profileAvatarButton, #profileDockButton, #touchMenuBtn")) return "open";
     if (element?.matches(".settings-tab")) return "move";
     if (element?.matches("select, input[type='checkbox']")) return "toggle";
     return "confirm";
@@ -1441,8 +1454,23 @@
 
   async function toggleFullscreen() {
     try {
-      if (document.fullscreenElement) await document.exitFullscreen();
-      else await refs.console.requestFullscreen({ navigationUI: "hide" });
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+        try {
+          window.screen.orientation?.unlock?.();
+        } catch (_) {
+          // Some browsers do not expose orientation control.
+        }
+      } else {
+        await refs.console.requestFullscreen({ navigationUI: "hide" });
+        if (document.documentElement.classList.contains("has-touch") && typeof window.screen.orientation?.lock === "function") {
+          try {
+            await window.screen.orientation.lock("landscape");
+          } catch (_) {
+            // Fullscreen still works when orientation locking is unavailable.
+          }
+        }
+      }
     } catch (_) {
       showToast("Tela cheia não está disponível neste navegador.", true);
     }
@@ -1598,6 +1626,18 @@
       syncQuickSettings();
     });
     refs.brightnessRange.addEventListener("change", savePreferences);
+    refs.touchOpacityRange.addEventListener("input", () => {
+      preferences.touchOpacity = Number(refs.touchOpacityRange.value);
+      refs.touchOpacityValue.textContent = `${preferences.touchOpacity}%`;
+      document.documentElement.style.setProperty("--touch-control-opacity", (preferences.touchOpacity / 100).toFixed(2));
+    });
+    refs.touchOpacityRange.addEventListener("change", savePreferences);
+    refs.touchScaleSelect.addEventListener("change", () => {
+      const scale = Number(refs.touchScaleSelect.value);
+      preferences.touchScale = TOUCH_CONTROL_SCALES.has(scale) ? scale : DEFAULT_PREFERENCES.touchScale;
+      document.documentElement.style.setProperty("--touch-control-scale", (preferences.touchScale / 100).toFixed(2));
+      savePreferences();
+    });
     refs.fpsToggle.addEventListener("change", () => {
       preferences.showFps = refs.fpsToggle.checked;
       refs.gameHud.classList.toggle("is-hidden", !preferences.showFps);
@@ -1637,6 +1677,13 @@
     refs.fullscreenBtn.addEventListener("click", toggleFullscreen);
     refs.screenshotBtn.addEventListener("click", captureScreenshot);
     refs.quickMenuBtn.addEventListener("click", () => toggleQuickMenu(true));
+    refs.touchMenuBtn.addEventListener("click", () => {
+      if (!emulator.romLoaded) return;
+      emulator.releaseAllKeys();
+      pointerOwners.clear();
+      refs.controlKeys.forEach((button) => button.classList.remove("pressed"));
+      toggleQuickMenu(true);
+    });
     refs.quickActions.forEach((button) => button.addEventListener("click", () => handleQuickAction(button.dataset.quick)));
     document.addEventListener("keydown", onKeyDown);
     document.addEventListener("keyup", onKeyUp);
@@ -1765,6 +1812,8 @@
   }
 
   function initialize() {
+    const hasTouch = navigator.maxTouchPoints > 0 || window.matchMedia("(pointer: coarse)").matches || "ontouchstart" in window;
+    document.documentElement.classList.toggle("has-touch", hasTouch);
     collectReferences();
     emulator = new window.GBA.Emulator(refs.screen);
     window.gbaOne = emulator;
